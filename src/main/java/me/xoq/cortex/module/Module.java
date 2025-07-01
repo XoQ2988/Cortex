@@ -1,6 +1,8 @@
 package me.xoq.cortex.module;
 
+import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
+import me.xoq.cortex.utils.ChatUtils;
 import org.lwjgl.glfw.GLFW;
 
 public abstract class Module {
@@ -55,4 +57,19 @@ public abstract class Module {
 
     protected abstract void onEnable();
     protected abstract void onDisable();
+
+    public JsonObject toJson() {
+        JsonObject config = new JsonObject();
+
+        config.addProperty("enabled", enabled);
+        config.addProperty("keybind", keybind);
+
+        return config;
+    }
+
+    public void fromJson(JsonObject obj) {
+        ChatUtils.info("Loading settings for " + name);
+        if (obj.has("enabled") && obj.get("enabled").getAsBoolean()) enable();
+        if (obj.has("keybind")) this.keybind = obj.get("keybind").getAsInt();
+    }
 }

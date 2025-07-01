@@ -2,13 +2,12 @@ package me.xoq.cortex;
 
 import me.xoq.cortex.event.*;
 import me.xoq.cortex.module.Modules;
-import me.xoq.cortex.utils.ChatUtils;
+import me.xoq.cortex.utils.Config;
 import net.fabricmc.api.ClientModInitializer;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.passive.VillagerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +43,11 @@ public class CortexClient implements ClientModInitializer {
 		LOG.info("Initializing {} v{}", MOD_META.getName(), MOD_META.getVersion().getFriendlyString());
 
 		Modules.init();
+		Config.load();
 
 		EventBus.register(this);
+
+		Runtime.getRuntime()
+				.addShutdownHook(new Thread(Config::save));
 	}
 }
