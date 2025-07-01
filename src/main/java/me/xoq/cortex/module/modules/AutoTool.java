@@ -4,6 +4,7 @@ import me.xoq.cortex.event.BlockAttackEvent;
 import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.setting.BoolSetting;
+import me.xoq.cortex.setting.IntSetting;
 import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.InventoryUtils;
@@ -26,6 +27,16 @@ public class AutoTool extends Module {
                     .name("debug")
                     .description("Whether or not to log debug information to chat")
                     .defaultValue(false)
+                    .build()
+    );
+
+    private final Setting<Integer> minDurabilityPercent = registerSetting(
+            new IntSetting.Builder()
+                    .name("min-durability")
+                    .description("Don't auto-switch to tools below this durability percentage")
+                    .defaultValue(10)
+                    .min(0)
+                    .max(100)
                     .build()
     );
 
@@ -62,10 +73,28 @@ public class AutoTool extends Module {
         }
     }
 
-    private static float getScore(BlockState state, ItemStack stack) {
-        if (stack.isEmpty()) return 1.0f;  // base hand speed
-        if (stack.isDamageable() && !stack.isSuitableFor(state)) return -1.0f;  // avoid damaging tools not fit
+    private float getScore(BlockState state, ItemStack stack) {
+        float handScore = 1.1f;  // empty hand speed, slightly higher than with holding items, fallback
 
+        // if stack empty, use hand
+        if (stack.isEmpty()) return handScore;
+
+        if (stack.isDamageable()) {
+            // don't use wrong tool
+            if (!stack.isSuitableFor(state)) return 0.0f;
+
+            // if correct tool, check durability
+            int max = stack.getMaxDamage();
+            int dmg = stack.getDamage();
+            int pct = Math.round((float)(max - dmg) * 100f / max);
+
+            int minPct = minDurabilityPercent.get();
+            if (pct < minPct) {
+                return -handScore;
+            }
+        }
+
+        // compute base speed + optional efficiency bonus
         float base = stack.getMiningSpeedMultiplier(state);
         int effLevel = InventoryUtils.getEnchantmentLevel(stack, Enchantments.EFFICIENCY);
 

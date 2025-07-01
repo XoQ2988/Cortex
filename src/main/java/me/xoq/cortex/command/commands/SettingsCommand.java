@@ -70,6 +70,10 @@ public class SettingsCommand extends Command {
                         .then(argument("setting", StringArgumentType.word())
                                 .suggests(SETTING_SUGGESTER)
                                 .executes(this::viewOne)
+                                // .setting <module> <setting> reset>
+                                .then(literal("reset")
+                                        .executes(this::resetOne)
+                                )
                                 // .setting <module> <setting> <value>
                                 .then(argument("value", StringArgumentType.word())
                                         .suggests(VALUE_SUGGESTER)
@@ -124,6 +128,29 @@ public class SettingsCommand extends Command {
                 Setting<?> s = opt.get();
                 ChatUtils.info(String.format("%s = %s",
                         s.getName(), s.get().toString()));
+            }
+        }
+        return SINGLE_SUCCESS;
+    }
+
+    private int resetOne(CommandContext<CommandSource> ctx) {
+        String name = StringArgumentType.getString(ctx, "module");
+        String setting = StringArgumentType.getString(ctx, "setting");
+        Module module = Modules.get(name);
+
+        if (module == null) {
+            ChatUtils.error("Unknown module: " + name);
+        } else {
+            Optional<Setting<?>> opt = module.getSettings().stream()
+                    .filter(s -> s.getName().equals(setting))
+                    .findFirst();
+
+            if (opt.isEmpty()) {
+                ChatUtils.error("Unknown setting: " + setting);
+            } else {
+                Setting<?> s = opt.get();
+                s.resetToDefault();
+                ChatUtils.info("Reset " + s.getName() + " to default: " + s.get());
             }
         }
         return SINGLE_SUCCESS;
