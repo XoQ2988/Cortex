@@ -24,6 +24,7 @@ public final class Modules {
         register(new ProtectVillager());
 
         EventBus.register(KeyEvent.Press.class, Modules::onKeyPress);
+        EventBus.register(KeyEvent.Release.class, Modules::onKeyRelease);
     }
 
     private static void onKeyPress(KeyEvent.Press event) {
@@ -49,6 +50,18 @@ public final class Modules {
             if (event.getKey() == bind) {
                 module.toggle();
                 break;  // only toggle one module per key
+            }
+        }
+    }
+
+    private static void onKeyRelease(KeyEvent.Release event) {
+        for (Module module : getModules()) {
+            int bind = module.getKeybind();
+            // only momentary modules, and only if currently enabled
+            if (module.isMomentary() && bind >= 0 && event.getKey() == bind && module.isEnabled()) {
+                module.toggle();
+                event.cancel();  // consume the release
+                break;           // only one module per key
             }
         }
     }

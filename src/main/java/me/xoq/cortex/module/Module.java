@@ -4,14 +4,14 @@ import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Utils;
-import org.lwjgl.glfw.GLFW;
 
 public abstract class Module {
     private final String name;
     private final String title;
     private final String description;
     private boolean enabled = false;
-    private int keybind = GLFW.GLFW_KEY_UNKNOWN;
+    private boolean momentary = false;
+    private int keybind = -1;
 
     protected Module(String name, String description) {
         this.name = name;
@@ -39,6 +39,10 @@ public abstract class Module {
         return keybind;
     }
 
+    public final boolean isMomentary() {
+        return momentary;
+    }
+
     public final void enable() {
         if (enabled) return;
         onEnable();
@@ -63,6 +67,10 @@ public abstract class Module {
         this.keybind = keybind;
     }
 
+    public final void setMomentary(boolean momentary) {
+        this.momentary = momentary;
+    }
+
     protected void onEnable() { }
     protected void onDisable() { }
 
@@ -71,6 +79,7 @@ public abstract class Module {
 
         config.addProperty("enabled", enabled);
         config.addProperty("keybind", keybind);
+        config.addProperty("momentary", momentary);
 
         return config;
     }
@@ -78,6 +87,7 @@ public abstract class Module {
     public void fromJson(JsonObject obj) {
         if (obj.has("enabled") && obj.get("enabled").getAsBoolean()) enable();
         if (obj.has("keybind")) this.keybind = obj.get("keybind").getAsInt();
+        if (obj.has("momentary")) this.momentary = obj.get("momentary").getAsBoolean();
     }
 
 }
