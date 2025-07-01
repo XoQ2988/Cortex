@@ -28,7 +28,6 @@ public final class Modules {
             if (bind < 0) continue;  // skip unbound
             if (event.getKey() == bind) {
                 module.toggle();
-                ChatUtils.info("Toggled §e" + module.getTitle() + "§r §" + (module.isEnabled() ? "aON" : "cOFF") + "§r.");
                 break;  // only toggle one module per key
             }
         }
@@ -40,6 +39,10 @@ public final class Modules {
 
     public static Collection<Module> getModules() {
         return Collections.unmodifiableCollection(MODULES.values());
+    }
+
+    public static Module get(String name) {
+        return MODULES.get(name);
     }
 
     public static JsonObject toJson() {

@@ -2,6 +2,7 @@ package me.xoq.cortex.module;
 
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
+import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Utils;
 import org.lwjgl.glfw.GLFW;
 
@@ -55,6 +56,7 @@ public abstract class Module {
     public final void toggle() {
         if (enabled) disable();
         else enable();
+        ChatUtils.info("Toggled §e" + title + "§r §" + (enabled ? "aON" : "cOFF") + "§r.");
     }
 
     public void setKeybind(int keybind) {

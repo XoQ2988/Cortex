@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.xoq.cortex.command.commands.HelpCommand;
 import me.xoq.cortex.command.commands.ListCommand;
+import me.xoq.cortex.command.commands.ToggleCommand;
 import me.xoq.cortex.util.ChatUtils;
 import net.minecraft.command.CommandSource;
 
@@ -24,6 +25,7 @@ public class Commands {
     public static void init() {
         register(new HelpCommand());
         register(new ListCommand());
+        register(new ToggleCommand());
     }
 
     private static void register(Command command) {
