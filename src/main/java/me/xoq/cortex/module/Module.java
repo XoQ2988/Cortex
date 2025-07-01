@@ -1,11 +1,13 @@
 package me.xoq.cortex.module;
 
 import me.xoq.cortex.event.EventBus;
+import org.lwjgl.glfw.GLFW;
 
 public abstract class Module {
     private final String name;
     private final String description;
     private boolean enabled = false;
+    private int keybind = GLFW.GLFW_KEY_UNKNOWN;
 
     protected Module(String name, String description) {
         this.name = name;
@@ -22,6 +24,10 @@ public abstract class Module {
 
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public int getKeybind() {
+        return keybind;
     }
 
     public final void enable() {
@@ -41,6 +47,10 @@ public abstract class Module {
     public final void toggle() {
         if (enabled) disable();
         else enable();
+    }
+
+    public void setKeybind(int keybind) {
+        this.keybind = keybind;
     }
 
     protected abstract void onEnable();

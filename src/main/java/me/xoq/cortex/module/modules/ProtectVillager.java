@@ -5,10 +5,12 @@ import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.utils.ChatUtils;
 import net.minecraft.entity.passive.VillagerEntity;
+import org.lwjgl.glfw.GLFW;
 
 public class ProtectVillager extends Module {
     public ProtectVillager() {
         super("ProtectVillager", "Prevents you from hitting villagers");
+        setKeybind(GLFW.GLFW_KEY_RIGHT_SHIFT);
     }
 
     @Override

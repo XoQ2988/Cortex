@@ -1,6 +1,9 @@
 package me.xoq.cortex.module;
 
+import me.xoq.cortex.event.EventBus;
+import me.xoq.cortex.event.KeyEvent;
 import me.xoq.cortex.module.modules.ProtectVillager;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -15,18 +18,18 @@ public final class Modules {
     public static void init() {
         register(new ProtectVillager());
 
-        // TODO delete
+        EventBus.register(KeyEvent.Press.class, Modules::onKeyPress);
+    }
+
+    private static void onKeyPress(KeyEvent.Press event) {
         for (Module module : getModules()) {
-            module.enable();
+            if (event.getKey() == module.getKeybind()) module.toggle();
+            break;  // only toggle one module per key
         }
     }
 
     public static void register(Module module) {
         MODULES.put(module.getName(), module);
-    }
-
-    public static Module get(String name) {
-        return MODULES.get(name);
     }
 
     public static Collection<Module> getModules() {
