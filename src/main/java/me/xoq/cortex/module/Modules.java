@@ -3,6 +3,7 @@ package me.xoq.cortex.module;
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.event.KeyEvent;
+import me.xoq.cortex.module.modules.AutoTool;
 import me.xoq.cortex.module.modules.ProtectVillager;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Config;
@@ -21,6 +22,7 @@ public final class Modules {
     private static Module pendingBind = null;
 
     public static void init() {
+        register(new AutoTool());
         register(new ProtectVillager());
 
         EventBus.register(KeyEvent.Press.class, Modules::onKeyPress);

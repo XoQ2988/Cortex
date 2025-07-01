@@ -3,7 +3,7 @@
 Cortex is a client‐side Fabric mod framework for Minecraft 1.21.7 that provides:
 
 - A lightweight event bus and mixin hooks for block, entity & key events  
-- A modular “feature” system with toggleable modules and per-module keybinds  
+- A modular "feature" system with toggleable modules and per-module keybinds  
 - A commands suite for listing, toggling, binding & inspecting modules  
 - JSON-backed persistence of enabled state and keybinds  
 
