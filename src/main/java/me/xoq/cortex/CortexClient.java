@@ -1,5 +1,6 @@
 package me.xoq.cortex;
 
+import me.xoq.cortex.command.Commands;
 import me.xoq.cortex.event.*;
 import me.xoq.cortex.module.Modules;
 import me.xoq.cortex.util.Config;
@@ -43,6 +44,7 @@ public class CortexClient implements ClientModInitializer {
 		LOG.info("Initializing {} v{}", MOD_META.getName(), MOD_META.getVersion().getFriendlyString());
 
 		Modules.init();
+		Commands.init();
 		Config.load();
 
 		EventBus.register(this);

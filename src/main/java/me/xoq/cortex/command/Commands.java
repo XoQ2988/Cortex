@@ -2,42 +2,51 @@ package me.xoq.cortex.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import me.xoq.cortex.module.Module;
-import me.xoq.cortex.module.Modules;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import me.xoq.cortex.command.commands.HelpCommand;
+import me.xoq.cortex.command.commands.ListCommand;
 import me.xoq.cortex.util.ChatUtils;
+import net.minecraft.command.CommandSource;
 
-import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import static me.xoq.cortex.CortexClient.mc;
 
 
-/**
- * Very basic command dispatcher
- */
 public class Commands {
     public static final String PREFIX = ".";
-    private static final CommandDispatcher<CommandContext> DISPATCHER = new CommandDispatcher<>();
+    private static final CommandDispatcher<CommandSource> DISPATCHER = new CommandDispatcher<>();
+    private static final List<Command> COMMANDS = new ArrayList<>();
 
-    static {
-        DISPATCHER.register(
-                LiteralArgumentBuilder.<CommandContext>literal("list")
-                        .executes(ctx -> {
-                            ChatUtils.info("Modules:");
-                            for (Module m : Modules.getModules()) {
-                                ChatUtils.info(" - " + m.getTitle()
-                                        + (m.isEnabled() ? " §aON" : " §cOFF"));
-                            }
-                            return SINGLE_SUCCESS;
-                        })
-        );
+    public static void init() {
+        register(new HelpCommand());
+        register(new ListCommand());
     }
 
-    // fake "player" context with no fields
-    public static class CommandContext { }
+    private static void register(Command command) {
+        command.registerTo(DISPATCHER);
+        COMMANDS.add(command);
+    }
 
-    public static void dispatch(String input) {
+    public static CommandDispatcher<CommandSource> getDispatcher() {
+        return DISPATCHER;
+    }
+
+    public static List<Command> getAll() {
+        return Collections.unmodifiableList(COMMANDS);
+    }
+
+    public static void dispatch(String message) {
+        CommandSource src = Objects.requireNonNull(mc.getNetworkHandler()).getCommandSource();
         try {
-            DISPATCHER.execute(input, new CommandContext());
+            DISPATCHER.execute(message, src);
+        } catch (CommandSyntaxException e) {
+            ChatUtils.error("Syntax error: " + e.getMessage());
         } catch (Exception e) {
-            ChatUtils.error("Command error: " + e.getMessage());
+            ChatUtils.error("Command failed: " + e.getMessage());
         }
     }
 }
