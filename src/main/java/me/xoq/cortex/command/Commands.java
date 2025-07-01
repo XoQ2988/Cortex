@@ -3,6 +3,7 @@ package me.xoq.cortex.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import me.xoq.cortex.command.commands.BindCommand;
 import me.xoq.cortex.command.commands.HelpCommand;
 import me.xoq.cortex.command.commands.ListCommand;
 import me.xoq.cortex.command.commands.ToggleCommand;
@@ -23,6 +24,7 @@ public class Commands {
     private static final List<Command> COMMANDS = new ArrayList<>();
 
     public static void init() {
+        register(new BindCommand());
         register(new HelpCommand());
         register(new ListCommand());
         register(new ToggleCommand());

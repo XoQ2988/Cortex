@@ -5,6 +5,9 @@ import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.event.KeyEvent;
 import me.xoq.cortex.module.modules.ProtectVillager;
 import me.xoq.cortex.util.ChatUtils;
+import me.xoq.cortex.util.Config;
+import me.xoq.cortex.util.Utils;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -15,6 +18,7 @@ public final class Modules {
     private Modules() { }
 
     private static final Map<String, Module> MODULES = new LinkedHashMap<>();
+    private static Module pendingBind = null;
 
     public static void init() {
         register(new ProtectVillager());
@@ -23,6 +27,22 @@ public final class Modules {
     }
 
     private static void onKeyPress(KeyEvent.Press event) {
+        // capture logic
+        if (pendingBind != null) {
+            int key = event.getKey();
+
+            if (key == GLFW.GLFW_KEY_ESCAPE) ChatUtils.info("§cBinding cancelled for " + pendingBind.getTitle());
+            else {
+                pendingBind.setKeybind(key);
+                ChatUtils.info("§aBound §6" + pendingBind.getTitle() + " §ato §6" + Utils.keyToString(key) + "§r.");
+            }
+            pendingBind = null;
+            event.cancel();
+            Config.save();
+            return;
+        }
+
+        // toggle logic
         for (Module module : getModules()) {
             int bind = module.getKeybind();
             if (bind < 0) continue;  // skip unbound
@@ -43,6 +63,11 @@ public final class Modules {
 
     public static Module get(String name) {
         return MODULES.get(name);
+    }
+
+    public static void startBinding(Module module) {
+        pendingBind = module;
+        ChatUtils.info("§ePress a key to bind " + module.getTitle() + "§r, or §cESC §rto cancel.");
     }
 
     public static JsonObject toJson() {
