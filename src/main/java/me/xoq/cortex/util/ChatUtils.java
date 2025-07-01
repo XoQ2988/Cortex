@@ -32,8 +32,8 @@ public class ChatUtils {
     /** Low-level send: push a new component into the in-game chat HUD. */
     private static void send(String content, Formatting color) {
         if (mc.player == null) return;
-        MutableText msg = PREFIX.copy();
-
+        MutableText msg = Text.literal("").formatted(color);
+        msg.append(PREFIX.copy());
         msg.append(parseFormatting(content, color));
         mc.inGameHud.getChatHud().addMessage(msg);
     }
