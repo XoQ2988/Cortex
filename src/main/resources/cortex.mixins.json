@@ -1,10 +1,11 @@
 {
-	"required": true,
-	"package": "me.xoq.cortex.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "package": "me.xoq.cortex.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ClientPlayerInteractionManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }
