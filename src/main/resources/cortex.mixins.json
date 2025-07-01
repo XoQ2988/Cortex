@@ -3,6 +3,7 @@
   "package": "me.xoq.cortex.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BlockItemMixin",
     "ClientPlayerInteractionManagerMixin"
   ],
   "injectors": {

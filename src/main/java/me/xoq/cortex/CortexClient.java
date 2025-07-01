@@ -1,13 +1,13 @@
 package me.xoq.cortex;
 
-import me.xoq.cortex.event.BlockBreakingEvent;
-import me.xoq.cortex.event.EventBus;
-import me.xoq.cortex.event.EventListener;
+import me.xoq.cortex.event.*;
+import me.xoq.cortex.utils.ChatUtils;
 import net.fabricmc.api.ClientModInitializer;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.passive.VillagerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public class CortexClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		// Prevent double-initialization
 		if (INSTANCE != null) {
-			LOG.warn("{} tried to initialize twice—ignoring.", MOD_ID);
+			LOG.warn("{} tried to initialize twice - ignoring.", MOD_ID);
 			return;
 		}
 		INSTANCE = this;
@@ -46,7 +46,12 @@ public class CortexClient implements ClientModInitializer {
 	}
 
 	@EventListener
-	private void onBlockBreaking(BlockBreakingEvent event) {
-        LOG.info("Breaking block at {}", event.getPos().toShortString());
+	private void eventListener(EntityAttackEvent event) {
+        if (event.getTarget() instanceof VillagerEntity) {
+			event.cancel();
+			ChatUtils.warn("Prevented attack.");
+		} else {
+			ChatUtils.info("Attacked entity" + event.getTarget().getType().getName().getString());
+		}
 	}
 }
