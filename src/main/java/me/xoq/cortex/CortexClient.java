@@ -1,6 +1,7 @@
 package me.xoq.cortex;
 
 import me.xoq.cortex.event.*;
+import me.xoq.cortex.module.Modules;
 import me.xoq.cortex.utils.ChatUtils;
 import net.fabricmc.api.ClientModInitializer;
 
@@ -42,16 +43,8 @@ public class CortexClient implements ClientModInitializer {
 
 		LOG.info("Initializing {} v{}", MOD_META.getName(), MOD_META.getVersion().getFriendlyString());
 
-		EventBus.register(this);
-	}
+		Modules.init();
 
-	@EventListener
-	private void eventListener(EntityAttackEvent event) {
-        if (event.getTarget() instanceof VillagerEntity) {
-			event.cancel();
-			ChatUtils.warn("Prevented attack.");
-		} else {
-			ChatUtils.info("Attacked entity" + event.getTarget().getType().getName().getString());
-		}
+		EventBus.register(this);
 	}
 }
