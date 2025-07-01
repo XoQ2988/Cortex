@@ -1,29 +1,18 @@
 package me.xoq.cortex.module.modules;
 
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import me.xoq.cortex.event.BlockAttackEvent;
 import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.module.Module;
+import me.xoq.cortex.setting.BoolSetting;
+import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.InventoryUtils;
 import net.minecraft.block.BlockState;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
 
-import java.lang.reflect.Array;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import static me.xoq.cortex.CortexClient.mc;
 
@@ -31,6 +20,14 @@ public class AutoTool extends Module {
     public AutoTool() {
         super("auto-tool", "Automatically switches to the most effective tool when performing a task");
     }
+
+    private final Setting<Boolean> debug = registerSetting(
+            new BoolSetting.Builder()
+                    .name("debug")
+                    .description("Whether or not to log debug information to chat")
+                    .defaultValue(false)
+                    .build()
+    );
 
     @EventListener
     private void onBlockAttack(BlockAttackEvent event) {
@@ -52,14 +49,14 @@ public class AutoTool extends Module {
         float bestScore = currentScore;
         for (int slot = 0; slot < hotbar.size(); slot++) {
             float score = getScore(blockState, hotbar.get(slot));
-            ChatUtils.info("Slot §9" + (slot + 1) + "§r §6" + score + "§r.");
+            if (debug.get()) ChatUtils.info("Slot §9" + (slot + 1) + "§r §6" + score + "§r.");
             if (score > bestScore) {
                 bestScore = score;
                 bestSlot = slot;
             }
         }
 
-        ChatUtils.info("Best slot: §6" + (bestSlot + 1) + "§r.");
+        if (debug.get()) ChatUtils.info("Slot §6" + (bestSlot + 1) + "§r");
         if (bestSlot != mc.player.getInventory().getSelectedSlot()) {
             InventoryUtils.setSelectedHotbarSlot(bestSlot);
         }

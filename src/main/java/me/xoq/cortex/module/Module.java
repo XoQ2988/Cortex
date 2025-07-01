@@ -2,8 +2,12 @@ package me.xoq.cortex.module;
 
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
+import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Module {
     private final String name;
@@ -12,6 +16,7 @@ public abstract class Module {
     private boolean enabled = false;
     private boolean momentary = false;
     private int keybind = -1;
+    private final List<Setting<?>> settings = new ArrayList<>();
 
     protected Module(String name, String description) {
         this.name = name;
@@ -74,20 +79,39 @@ public abstract class Module {
     protected void onEnable() { }
     protected void onDisable() { }
 
-    public JsonObject toJson() {
-        JsonObject config = new JsonObject();
-
-        config.addProperty("enabled", enabled);
-        config.addProperty("keybind", keybind);
-        config.addProperty("momentary", momentary);
-
-        return config;
+    protected <T> Setting<T> registerSetting(Setting<T> setting) {
+        settings.add(setting);
+        return setting;
     }
 
-    public void fromJson(JsonObject obj) {
-        if (obj.has("enabled") && obj.get("enabled").getAsBoolean()) enable();
-        if (obj.has("keybind")) this.keybind = obj.get("keybind").getAsInt();
-        if (obj.has("momentary")) this.momentary = obj.get("momentary").getAsBoolean();
+    public JsonObject toJson() {
+        JsonObject configJson = new JsonObject();
+
+        configJson.addProperty("enabled", enabled);
+        configJson.addProperty("keybind", keybind);
+        configJson.addProperty("momentary", momentary);
+
+        if (!settings.isEmpty()) {
+            JsonObject settingsJson = new JsonObject();
+            for (Setting<?> s : settings) {
+                s.toJson(settingsJson);
+            }
+            configJson.add("settings", settingsJson);
+        }
+
+        return configJson;
+    }
+
+    public void fromJson(JsonObject configJson) {
+        if (configJson.has("enabled") && configJson.get("enabled").getAsBoolean()) enable();
+        if (configJson.has("keybind")) this.keybind = configJson.get("keybind").getAsInt();
+        if (configJson.has("momentary")) this.momentary = configJson.get("momentary").getAsBoolean();
+
+        if (!configJson.has("settings")) return;
+        JsonObject settingsJson = configJson.getAsJsonObject("settings");
+        for (Setting<?> s : settings) {
+            s.fromJson(settingsJson);
+        }
     }
 
 }
