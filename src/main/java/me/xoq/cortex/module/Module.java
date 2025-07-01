@@ -7,6 +7,8 @@ import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class Module {
@@ -78,6 +80,10 @@ public abstract class Module {
 
     protected void onEnable() { }
     protected void onDisable() { }
+
+    public Collection<Setting<?>> getSettings() {
+        return Collections.unmodifiableCollection(settings);
+    }
 
     protected <T> Setting<T> registerSetting(Setting<T> setting) {
         settings.add(setting);

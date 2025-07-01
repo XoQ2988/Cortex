@@ -3,9 +3,25 @@ package me.xoq.cortex.setting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
+import java.util.List;
+
 public class BoolSetting extends Setting<Boolean> {
     private BoolSetting(String name, String description, Boolean defaultValue) {
         super(name, description, defaultValue);
+    }
+
+    @Override
+    public List<String> getSuggestions() {
+        return List.of("true", "false");
+    }
+
+    @Override
+    public Boolean parseValue(String raw) {
+        String lower = raw.toLowerCase();
+        if (lower.equals("true") || lower.equals("false")) {
+            return Boolean.parseBoolean(lower);
+        }
+        throw new IllegalArgumentException("Must be true or false");
     }
 
     @Override

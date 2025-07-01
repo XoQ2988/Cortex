@@ -24,6 +24,7 @@ public class Commands {
         register(new BindsCommand());
         register(new HelpCommand());
         register(new ListCommand());
+        register(new SettingsCommand());
         register(new ToggleCommand());
     }
 
