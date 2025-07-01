@@ -2,7 +2,7 @@ package me.xoq.cortex;
 
 import me.xoq.cortex.event.*;
 import me.xoq.cortex.module.Modules;
-import me.xoq.cortex.utils.Config;
+import me.xoq.cortex.util.Config;
 import net.fabricmc.api.ClientModInitializer;
 
 import net.fabricmc.loader.api.FabricLoader;

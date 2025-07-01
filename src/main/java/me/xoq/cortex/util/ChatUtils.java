@@ -1,4 +1,4 @@
-package me.xoq.cortex.utils;
+package me.xoq.cortex.util;
 
 import com.mojang.brigadier.StringReader;
 import me.xoq.cortex.CortexClient;

@@ -2,7 +2,7 @@ package me.xoq.cortex.module;
 
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
-import me.xoq.cortex.utils.Utils;
+import me.xoq.cortex.util.Utils;
 import org.lwjgl.glfw.GLFW;
 
 public abstract class Module {

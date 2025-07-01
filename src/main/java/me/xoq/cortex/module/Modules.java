@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.event.KeyEvent;
 import me.xoq.cortex.module.modules.ProtectVillager;
-import me.xoq.cortex.utils.ChatUtils;
+import me.xoq.cortex.util.ChatUtils;
 
 import java.util.Collection;
 import java.util.Collections;

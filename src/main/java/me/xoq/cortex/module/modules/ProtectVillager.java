@@ -3,7 +3,7 @@ package me.xoq.cortex.module.modules;
 import me.xoq.cortex.event.EntityAttackEvent;
 import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.module.Module;
-import me.xoq.cortex.utils.ChatUtils;
+import me.xoq.cortex.util.ChatUtils;
 import net.minecraft.entity.passive.VillagerEntity;
 
 public class ProtectVillager extends Module {

@@ -1,4 +1,4 @@
-package me.xoq.cortex.utils;
+package me.xoq.cortex.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

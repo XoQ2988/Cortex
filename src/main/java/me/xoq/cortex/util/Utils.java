@@ -1,4 +1,4 @@
-package me.xoq.cortex.utils;
+package me.xoq.cortex.util;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
