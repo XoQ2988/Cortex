@@ -2,22 +2,28 @@ package me.xoq.cortex.module;
 
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
-import me.xoq.cortex.utils.ChatUtils;
+import me.xoq.cortex.utils.Utils;
 import org.lwjgl.glfw.GLFW;
 
 public abstract class Module {
     private final String name;
+    private final String title;
     private final String description;
     private boolean enabled = false;
     private int keybind = GLFW.GLFW_KEY_UNKNOWN;
 
     protected Module(String name, String description) {
         this.name = name;
+        this.title = Utils.nameToTitle(name);
         this.description = description;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public String getDescription() {
@@ -55,8 +61,8 @@ public abstract class Module {
         this.keybind = keybind;
     }
 
-    protected abstract void onEnable();
-    protected abstract void onDisable();
+    protected void onEnable() { }
+    protected void onDisable() { }
 
     public JsonObject toJson() {
         JsonObject config = new JsonObject();
@@ -68,8 +74,8 @@ public abstract class Module {
     }
 
     public void fromJson(JsonObject obj) {
-        ChatUtils.info("Loading settings for " + name);
         if (obj.has("enabled") && obj.get("enabled").getAsBoolean()) enable();
         if (obj.has("keybind")) this.keybind = obj.get("keybind").getAsInt();
     }
+
 }

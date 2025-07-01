@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.event.KeyEvent;
 import me.xoq.cortex.module.modules.ProtectVillager;
+import me.xoq.cortex.utils.ChatUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,8 +24,13 @@ public final class Modules {
 
     private static void onKeyPress(KeyEvent.Press event) {
         for (Module module : getModules()) {
-            if (event.getKey() == module.getKeybind()) module.toggle();
-            break;  // only toggle one module per key
+            int bind = module.getKeybind();
+            if (bind < 0) continue;  // skip unbound
+            if (event.getKey() == bind) {
+                module.toggle();
+                ChatUtils.info("Toggled §e" + module.getTitle() + "§r §" + (module.isEnabled() ? "aON" : "cOFF") + "§r.");
+                break;  // only toggle one module per key
+            }
         }
     }
 
