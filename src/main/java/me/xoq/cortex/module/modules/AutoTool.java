@@ -3,10 +3,12 @@ package me.xoq.cortex.module.modules;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import me.xoq.cortex.event.BlockAttackEvent;
 import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.util.ChatUtils;
+import me.xoq.cortex.util.InventoryUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -18,6 +20,9 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
 
+import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static me.xoq.cortex.CortexClient.mc;
@@ -31,33 +36,32 @@ public class AutoTool extends Module {
     private void onBlockAttack(BlockAttackEvent event) {
         if (mc.player == null || mc.world == null) return;
 
+        if (mc.player.isCreative()) return;
+
         BlockPos blockPos = event.getPos();
         BlockState blockState = mc.world.getBlockState(blockPos);
 
-        int currentSlot = mc.player.getInventory().getSelectedSlot();
-        ItemStack currentStack = mc.player.getInventory().getStack(currentSlot);
+        // grab hotbar stacks and current slot
+        List<ItemStack> hotbar = InventoryUtils.getHotbarStacks();
+        int currentSlot = InventoryUtils.getSelectedHotbarSlot();
+        ItemStack currentStack = hotbar.get(currentSlot);
         float currentScore = getScore(blockState, currentStack);
 
+        // find the best slot
         int bestSlot = currentSlot;
-        ItemStack bestStack = currentStack;
         float bestScore = currentScore;
-
-        for (int slot = 0; slot < 9; slot++) {
-            ItemStack stack = mc.player.getInventory().getStack(slot);
-            float score = getScore(blockState, stack);
-
+        for (int slot = 0; slot < hotbar.size(); slot++) {
+            float score = getScore(blockState, hotbar.get(slot));
             ChatUtils.info("Slot §9" + (slot + 1) + "§r §6" + score + "§r.");
-
             if (score > bestScore) {
-                bestSlot = slot;
-                bestStack = stack;
                 bestScore = score;
+                bestSlot = slot;
             }
         }
 
         ChatUtils.info("Best slot: §6" + (bestSlot + 1) + "§r.");
         if (bestSlot != mc.player.getInventory().getSelectedSlot()) {
-            mc.player.getInventory().setSelectedSlot(bestSlot);
+            InventoryUtils.setSelectedHotbarSlot(bestSlot);
         }
     }
 
@@ -66,6 +70,9 @@ public class AutoTool extends Module {
         if (stack.isDamageable() && !stack.isSuitableFor(state)) return -1.0f;  // avoid damaging tools not fit
 
         float base = stack.getMiningSpeedMultiplier(state);
+        int effLevel = InventoryUtils.getEnchantmentLevel(stack, Enchantments.EFFICIENCY);
+
+        if (effLevel > 0) base += (effLevel * effLevel + 1) * 0.5f; // Efficiency adds (level^2 + 1) / 2
 
         return base;
     }
