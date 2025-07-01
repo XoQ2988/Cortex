@@ -59,19 +59,3 @@ jar {
 		rename { "${it}_${archivesBaseName}" }
 	}
 }
-
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-			artifactId = archivesBaseName
-		}
-	}
-	// repositories {
-	//     maven {
-	//         name = "Modrinth"
-	//         url  = uri("https://api.modrinth.com/v2/projects")
-	//         credentials { /*...*/ }
-	//     }
-	// }
-}
