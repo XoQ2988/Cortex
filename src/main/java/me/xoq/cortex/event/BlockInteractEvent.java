@@ -1,6 +1,5 @@
 package me.xoq.cortex.event;
 
-import me.xoq.cortex.mixin.ClientPlayerInteractionManagerMixin;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
