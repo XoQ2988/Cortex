@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static me.xoq.cortex.CortexClient.mc;
+
 public final class Modules {
     private Modules() { }
 
@@ -32,6 +34,9 @@ public final class Modules {
     }
 
     private static void onKeyPress(KeyEvent.Press event) {
+        // don't toggle modules while any GUI is open
+        if (mc.currentScreen != null) return;
+
         // capture logic
         if (pendingBind != null) {
             int key = event.getKey();
@@ -59,6 +64,8 @@ public final class Modules {
     }
 
     private static void onKeyRelease(KeyEvent.Release event) {
+        if (mc.currentScreen != null) return;
+
         for (Module module : getModules()) {
             int bind = module.getKeybind();
             // only momentary modules, and only if currently enabled
