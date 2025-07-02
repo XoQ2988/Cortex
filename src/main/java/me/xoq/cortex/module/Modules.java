@@ -26,6 +26,7 @@ public final class Modules {
         register(new AutoSneak());
         register(new AutoTool());
         register(new BetterTooltips());
+        register(new BreakDelay());
         register(new Collisions());
         register(new MLGAssist());
 
