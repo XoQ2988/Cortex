@@ -2,7 +2,7 @@ package me.xoq.cortex.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import me.xoq.cortex.event.BlockCollisionShapeEvent;
+import me.xoq.cortex.event.block.BlockCollisionShapeEvent;
 import me.xoq.cortex.event.EventBus;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;

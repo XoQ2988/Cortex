@@ -2,7 +2,7 @@ package me.xoq.cortex.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import me.xoq.cortex.event.EventBus;
-import me.xoq.cortex.event.ItemStackTooltipEvent;
+import me.xoq.cortex.event.misc.ItemStackTooltipEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;

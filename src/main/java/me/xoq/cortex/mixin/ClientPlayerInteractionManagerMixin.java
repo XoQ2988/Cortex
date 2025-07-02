@@ -1,6 +1,11 @@
 package me.xoq.cortex.mixin;
 
 import me.xoq.cortex.event.*;
+import me.xoq.cortex.event.block.BlockAttackEvent;
+import me.xoq.cortex.event.block.BlockBreakEvent;
+import me.xoq.cortex.event.block.BlockInteractEvent;
+import me.xoq.cortex.event.entity.EntityAttackEvent;
+import me.xoq.cortex.event.entity.EntityInteractEvent;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.Entity;

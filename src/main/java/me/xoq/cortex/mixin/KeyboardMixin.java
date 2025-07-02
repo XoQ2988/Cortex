@@ -1,7 +1,7 @@
 package me.xoq.cortex.mixin;
 
 import me.xoq.cortex.event.EventBus;
-import me.xoq.cortex.event.KeyEvent;
+import me.xoq.cortex.event.misc.KeyEvent;
 import net.minecraft.client.Keyboard;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;

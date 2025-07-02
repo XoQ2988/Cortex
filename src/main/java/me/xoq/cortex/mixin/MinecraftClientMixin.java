@@ -1,7 +1,7 @@
 package me.xoq.cortex.mixin;
 
 import me.xoq.cortex.event.EventBus;
-import me.xoq.cortex.event.TickEvent;
+import me.xoq.cortex.event.misc.TickEvent;
 import net.minecraft.client.MinecraftClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

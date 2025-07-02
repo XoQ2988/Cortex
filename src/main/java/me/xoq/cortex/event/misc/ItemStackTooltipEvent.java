@@ -1,4 +1,4 @@
-package me.xoq.cortex.event;
+package me.xoq.cortex.event.misc;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.item.ItemStack;

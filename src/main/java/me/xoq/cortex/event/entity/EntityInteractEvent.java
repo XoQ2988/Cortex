@@ -1,6 +1,7 @@
-package me.xoq.cortex.event;
+package me.xoq.cortex.event.entity;
 
 
+import me.xoq.cortex.event.CancellableEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Hand;

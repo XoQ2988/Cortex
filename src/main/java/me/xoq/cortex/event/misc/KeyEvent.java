@@ -1,10 +1,12 @@
-package me.xoq.cortex.event;
+package me.xoq.cortex.event.misc;
+
+import me.xoq.cortex.event.CancellableEvent;
 
 /**
  * Fired for each raw keyboard event.
  * Listeners may cancel to prevent further processing
  */
-public class KeyEvent extends CancellableEvent{
+public class KeyEvent extends CancellableEvent {
     private final long window;
     private final int key;
     private final int scancode;

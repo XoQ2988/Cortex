@@ -1,5 +1,6 @@
-package me.xoq.cortex.event;
+package me.xoq.cortex.event.block;
 
+import me.xoq.cortex.event.CancellableEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -7,7 +8,7 @@ import net.minecraft.util.math.Direction;
  * Fired when a player begins breaking a block.
  * Listeners may cancel to prevent the break.
  */
-public class BlockAttackEvent extends CancellableEvent{
+public class BlockAttackEvent extends CancellableEvent {
     private final BlockPos pos;
     private final Direction direction;
 

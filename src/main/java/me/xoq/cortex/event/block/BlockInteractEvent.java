@@ -1,5 +1,6 @@
-package me.xoq.cortex.event;
+package me.xoq.cortex.event.block;
 
+import me.xoq.cortex.event.CancellableEvent;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -8,7 +9,7 @@ import net.minecraft.util.hit.BlockHitResult;
  * Fired when a player interacts with a block.
  * Listeners may cancel to prevent the interaction.
  */
-public class BlockInteractEvent extends CancellableEvent{
+public class BlockInteractEvent extends CancellableEvent {
     private final ClientPlayerEntity player;
     private final Hand hand;
     private final BlockHitResult hitResult;

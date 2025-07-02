@@ -1,6 +1,6 @@
 package me.xoq.cortex.module.modules;
 
-import me.xoq.cortex.event.BlockAttackEvent;
+import me.xoq.cortex.event.block.BlockAttackEvent;
 import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.setting.BoolSetting;

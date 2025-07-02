@@ -1,4 +1,4 @@
-package me.xoq.cortex.event;
+package me.xoq.cortex.event.misc;
 
 public class TickEvent {
     public static class Pre extends TickEvent { }

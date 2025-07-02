@@ -2,7 +2,7 @@ package me.xoq.cortex.module;
 
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
-import me.xoq.cortex.event.KeyEvent;
+import me.xoq.cortex.event.misc.KeyEvent;
 import me.xoq.cortex.module.modules.*;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Config;

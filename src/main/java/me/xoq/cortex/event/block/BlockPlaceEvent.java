@@ -1,5 +1,6 @@
-package me.xoq.cortex.event;
+package me.xoq.cortex.event.block;
 
+import me.xoq.cortex.event.CancellableEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemPlacementContext;
 

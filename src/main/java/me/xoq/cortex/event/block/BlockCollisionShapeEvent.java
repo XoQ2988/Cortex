@@ -1,4 +1,4 @@
-package me.xoq.cortex.event;
+package me.xoq.cortex.event.block;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;

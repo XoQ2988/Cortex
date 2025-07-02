@@ -1,7 +1,7 @@
 package me.xoq.cortex.module.modules;
 
 import me.xoq.cortex.event.EventListener;
-import me.xoq.cortex.event.ItemStackTooltipEvent;
+import me.xoq.cortex.event.misc.ItemStackTooltipEvent;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.util.InventoryUtils;
 import me.xoq.cortex.util.Utils;

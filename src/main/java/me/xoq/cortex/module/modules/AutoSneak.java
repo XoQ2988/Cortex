@@ -1,8 +1,8 @@
 package me.xoq.cortex.module.modules;
 
-import me.xoq.cortex.event.BlockPlaceEvent;
+import me.xoq.cortex.event.block.BlockPlaceEvent;
 import me.xoq.cortex.event.EventListener;
-import me.xoq.cortex.event.TickEvent;
+import me.xoq.cortex.event.misc.TickEvent;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.setting.BoolSetting;
 import me.xoq.cortex.setting.IntSetting;
