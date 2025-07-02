@@ -3,10 +3,7 @@ package me.xoq.cortex.module;
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.event.KeyEvent;
-import me.xoq.cortex.module.modules.AutoSneak;
-import me.xoq.cortex.module.modules.AutoTool;
-import me.xoq.cortex.module.modules.BetterTooltips;
-import me.xoq.cortex.module.modules.Collisions;
+import me.xoq.cortex.module.modules.*;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Config;
 import me.xoq.cortex.util.Utils;
@@ -30,6 +27,7 @@ public final class Modules {
         register(new AutoTool());
         register(new BetterTooltips());
         register(new Collisions());
+        register(new MLGAssist());
 
         EventBus.register(KeyEvent.Press.class, Modules::onKeyPress);
         EventBus.register(KeyEvent.Release.class, Modules::onKeyRelease);
