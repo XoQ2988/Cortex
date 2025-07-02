@@ -1,14 +1,17 @@
 {
 	"schemaVersion": 1,
+	"name": "Cortex",
 	"id": "cortex",
 	"version": "${version}",
-	"name": "Cortex",
 	"description": "",
 	"authors": [
 		"XoQ"
 	],
+	"contact": {
+		"sources": "https://github.com/XoQ2988/Cortex"
+	},
 	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
+	"icon": "assets/cortex/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"client": [

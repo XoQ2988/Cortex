@@ -2,19 +2,17 @@
   "required": true,
   "package": "me.xoq.cortex.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "BlockItemMixin",
+  "client": [
     "BlockCollisionSpliteratorMixin",
+    "BlockItemMixin",
     "ClientPlayerInteractionManagerMixin",
-    "ItemStackMixin"
+    "ClientPlayNetworkHandlerMixin",
+    "ChatInputSuggesterMixin",
+    "ItemStackMixin",
+    "KeyboardMixin",
+    "MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "client": [
-    "ChatInputSuggesterMixin",
-    "ClientPlayNetworkHandlerMixin",
-    "KeyboardMixin",
-    "MinecraftClientMixin"
-  ]
+  }
 }

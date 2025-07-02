@@ -4,6 +4,10 @@ import me.xoq.cortex.event.CancellableEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemPlacementContext;
 
+/**
+ * Fired when a player places a block (client-side).
+ * Cancelling via listeners causes weird behaviour.
+ */
 public class BlockPlaceEvent extends CancellableEvent {
     private final ItemPlacementContext context;
     private final BlockState state;

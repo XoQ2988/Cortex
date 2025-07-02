@@ -12,15 +12,15 @@ public class BlockCollisionShapeEvent {
     private VoxelShape overrideShape;
 
     public BlockCollisionShapeEvent(BlockState state, BlockView world, BlockPos pos) {
-        this.state         = state;
-        this.world         = world;
-        this.pos           = pos;
+        this.state = state;
+        this.world = world;
+        this.pos = pos;
         this.overrideShape = null;
     }
 
-    public BlockState getState()       { return state; }
-    public BlockView  getWorld()       { return world; }
-    public BlockPos   getPos()         { return pos; }
+    public BlockState getState() { return state; }
+    public BlockView  getWorld() { return world; }
+    public BlockPos   getPos() { return pos; }
 
     public void setShape(VoxelShape shape) {
         this.overrideShape = shape;
