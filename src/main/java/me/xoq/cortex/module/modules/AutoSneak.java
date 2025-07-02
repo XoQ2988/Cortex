@@ -4,6 +4,7 @@ import me.xoq.cortex.event.BlockPlaceEvent;
 import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.event.TickEvent;
 import me.xoq.cortex.module.Module;
+import me.xoq.cortex.setting.BoolSetting;
 import me.xoq.cortex.setting.IntSetting;
 import me.xoq.cortex.setting.Setting;
 import net.minecraft.block.BlockState;
@@ -28,6 +29,14 @@ public class AutoSneak extends Module {
                     .description("Ticks to wait after placing a block before releasing sneak")
                     .defaultValue(2)
                     .min(0).max(20)
+                    .build()
+    );
+
+    private final Setting<Boolean> onlyOnGround = registerSetting(
+            new BoolSetting.Builder()
+                    .name("only-on-ground")
+                    .description("Only auto‐sneak when you are touching ground")
+                    .defaultValue(true)
                     .build()
     );
 
@@ -65,6 +74,12 @@ public class AutoSneak extends Module {
                 releaseSneak();
                 pendingRelease = -1;
             }
+            return;
+        }
+
+        // only‐on‐ground guard
+        if (onlyOnGround.get() && !mc.player.isOnGround()) {
+            releaseSneak();
             return;
         }
 
