@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.event.KeyEvent;
 import me.xoq.cortex.module.modules.AutoTool;
-import me.xoq.cortex.module.modules.ProtectVillager;
+import me.xoq.cortex.module.modules.BetterTooltips;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Config;
 import me.xoq.cortex.util.Utils;
@@ -23,7 +23,7 @@ public final class Modules {
 
     public static void init() {
         register(new AutoTool());
-        register(new ProtectVillager());
+        register(new BetterTooltips());
 
         EventBus.register(KeyEvent.Press.class, Modules::onKeyPress);
         EventBus.register(KeyEvent.Release.class, Modules::onKeyRelease);
@@ -89,9 +89,7 @@ public final class Modules {
         JsonObject root = new JsonObject();
         JsonObject mods = new JsonObject();
 
-        for (Module m : MODULES.values()) {
-            mods.add(m.getName(), m.toJson());
-        }
+        MODULES.values().forEach(m -> mods.add(m.getName(), m.toJson()));
         root.add("modules", mods);
 
         return root;
