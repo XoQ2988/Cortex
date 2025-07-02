@@ -3,6 +3,7 @@ package me.xoq.cortex.module;
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.event.KeyEvent;
+import me.xoq.cortex.module.modules.AutoSneak;
 import me.xoq.cortex.module.modules.AutoTool;
 import me.xoq.cortex.module.modules.BetterTooltips;
 import me.xoq.cortex.util.ChatUtils;
@@ -22,6 +23,7 @@ public final class Modules {
     private static Module pendingBind = null;
 
     public static void init() {
+        register(new AutoSneak());
         register(new AutoTool());
         register(new BetterTooltips());
 
