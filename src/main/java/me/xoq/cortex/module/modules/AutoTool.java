@@ -121,7 +121,7 @@ public class AutoTool extends Module {
 
     @Override
     protected String getStatus() {
-        if (!isEnabled()) return "Idle";
+        if (!isEnabled()) return null;
 
         StringBuilder sb = new StringBuilder();
         sb.append("Slot ").append(candidateSlot + 1);
