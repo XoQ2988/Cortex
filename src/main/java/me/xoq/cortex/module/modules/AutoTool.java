@@ -30,16 +30,6 @@ public class AutoTool extends Module {
                     .build()
     );
 
-    private final Setting<Integer> minDurabilityPercent = registerSetting(
-            new IntSetting.Builder()
-                    .name("min-durability")
-                    .description("Don't auto-switch to tools below this durability percentage")
-                    .defaultValue(10)
-                    .min(0)
-                    .max(100)
-                    .build()
-    );
-
     private int lastSelectedSlot;
     private int candidateSlot;
     private float candidateScore;
@@ -95,20 +85,8 @@ public class AutoTool extends Module {
         // if stack empty, use hand
         if (stack.isEmpty()) return handScore;
 
-        if (stack.isDamageable()) {
-            // don't use wrong tool
-            if (!stack.isSuitableFor(state)) return 0.0f;
-
-            // if correct tool, check durability
-            int max = stack.getMaxDamage();
-            int dmg = stack.getDamage();
-            int pct = Math.round((float)(max - dmg) * 100f / max);
-
-            int minPct = minDurabilityPercent.get();
-            if (pct < minPct) {
-                return -handScore;
-            }
-        }
+        // don't use wrong tool
+        if (!stack.isSuitableFor(state)) return 0.0f;
 
         // compute base speed + optional efficiency bonus
         float base = stack.getMiningSpeedMultiplier(state);

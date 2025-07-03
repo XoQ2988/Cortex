@@ -29,7 +29,7 @@ public class AntiBreak extends Module {
 
     @Override
     protected void onEnable() {
-        lastPct = 100;
+        lastPct = -1;
         wouldBlock = false;
     }
 
@@ -70,7 +70,7 @@ public class AntiBreak extends Module {
             lastPct       = Math.round((remaining * 100f) / max);
             wouldBlock    = lastPct < minDurabilityPct.get();
         } else {
-            lastPct    = 100;
+            lastPct    = -1;
             wouldBlock = false;
         }
 
