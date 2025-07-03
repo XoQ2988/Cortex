@@ -52,12 +52,16 @@ public class AutoSneak extends Module {
     protected void onEnable() {
         wasSneaking = false;
         pendingRelease = -1;
+
+        DebugHUD.registerLine(getTitle(), this::getSneaking);
     }
 
     @Override
     protected void onDisable() {
         pendingRelease = -1;
         releaseSneak();
+
+        DebugHUD.unregisterLine(getTitle());
     }
 
     @EventListener
@@ -122,6 +126,18 @@ public class AutoSneak extends Module {
         if (wasSneaking) {
             sneakKey.setPressed(false);
             wasSneaking = false;
+        }
+    }
+
+    private String getSneaking() {
+        if (pendingRelease > 0) {
+            return "Releasing in " + pendingRelease + "t";
+        } else if (pendingRelease == 0) {
+            return "Releasing now";
+        } else if (wasSneaking) {
+            return "Sneaking";
+        } else {
+            return "Idle";
         }
     }
 }

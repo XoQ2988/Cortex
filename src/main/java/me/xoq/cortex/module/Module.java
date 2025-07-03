@@ -2,6 +2,7 @@ package me.xoq.cortex.module;
 
 import com.google.gson.JsonObject;
 import me.xoq.cortex.event.EventBus;
+import me.xoq.cortex.module.modules.DebugHUD;
 import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Utils;
@@ -50,10 +51,15 @@ public abstract class Module {
         return momentary;
     }
 
+    protected String getStatus() {
+        return null;
+    }
+
     public final void enable() {
         if (enabled) return;
         onEnable();
         EventBus.register(this);
+        if (getStatus() != null) DebugHUD.registerLine("module."  + name + ".status", this::getStatus);
         enabled = true;
     }
 
@@ -61,6 +67,7 @@ public abstract class Module {
         if (!enabled) return;
         onDisable();
         EventBus.unregister(this);
+        DebugHUD.unregisterLine(title);
         enabled = false;
     }
 

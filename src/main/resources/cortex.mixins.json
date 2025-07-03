@@ -5,9 +5,10 @@
   "client": [
     "BlockCollisionSpliteratorMixin",
     "BlockItemMixin",
+    "ChatInputSuggesterMixin",
     "ClientPlayerInteractionManagerMixin",
     "ClientPlayNetworkHandlerMixin",
-    "ChatInputSuggesterMixin",
+    "InGameHudMixin",
     "ItemStackMixin",
     "KeyboardMixin",
     "MinecraftClientMixin"

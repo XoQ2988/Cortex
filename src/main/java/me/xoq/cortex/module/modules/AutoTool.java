@@ -40,6 +40,17 @@ public class AutoTool extends Module {
                     .build()
     );
 
+    private int lastSelectedSlot;
+    private int candidateSlot;
+    private float candidateScore;
+
+    @Override
+    protected void onEnable() {
+        lastSelectedSlot = -1;
+        candidateSlot = lastSelectedSlot;
+        candidateScore = 0f;
+    }
+
     @EventListener
     private void onBlockAttack(BlockAttackEvent event) {
         if (mc.player == null || mc.world == null) return;
@@ -48,6 +59,8 @@ public class AutoTool extends Module {
 
         BlockPos blockPos = event.getPos();
         BlockState blockState = mc.world.getBlockState(blockPos);
+
+        lastSelectedSlot = InventoryUtils.getSelectedHotbarSlot();
 
         // grab hotbar stacks and current slot
         List<ItemStack> hotbar = InventoryUtils.getHotbarStacks();
@@ -66,6 +79,9 @@ public class AutoTool extends Module {
                 bestSlot = slot;
             }
         }
+
+        candidateSlot  = bestSlot;
+        candidateScore = bestScore;
 
         if (debug.get()) ChatUtils.info("Slot §6" + (bestSlot + 1) + "§r");
         if (bestSlot != mc.player.getInventory().getSelectedSlot()) {
@@ -101,5 +117,19 @@ public class AutoTool extends Module {
         if (effLevel > 0) base += (effLevel * effLevel + 1) * 0.5f; // Efficiency adds (level^2 + 1) / 2
 
         return base;
+    }
+
+    @Override
+    protected String getStatus() {
+        if (!isEnabled()) return "Idle";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Slot ").append(candidateSlot + 1);
+        sb.append(" (score ").append(String.format("%.1f", candidateScore)).append(")");
+
+        if (candidateSlot != lastSelectedSlot) {
+            sb.append(" (from  ").append(lastSelectedSlot + 1).append(")");
+        }
+        return sb.toString();
     }
 }
