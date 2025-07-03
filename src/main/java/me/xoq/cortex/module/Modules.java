@@ -24,6 +24,7 @@ public final class Modules {
 
     public static void init() {
         register(new AntiBreak());
+        register(new AutoFarm());
         register(new AutoSneak());
         register(new AutoTool());
         register(new BetterTooltips());

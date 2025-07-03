@@ -47,7 +47,7 @@ public class DebugHUD extends Module {
 
             if (val == null) continue;
 
-            MutableText text = Text.literal(name + ": ").formatted(PRIMARY)
+            MutableText text = Text.literal(name + " ").formatted(PRIMARY)
                     .append(Text.literal(val).formatted(SECONDARY));
 
             context.drawText(mc.textRenderer, text.asOrderedText(), x, y, 0xFFFFFFFF, false);

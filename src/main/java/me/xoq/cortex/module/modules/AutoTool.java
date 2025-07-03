@@ -1,10 +1,9 @@
 package me.xoq.cortex.module.modules;
 
-import me.xoq.cortex.event.block.BlockAttackEvent;
 import me.xoq.cortex.event.EventListener;
+import me.xoq.cortex.event.block.BlockAttackEvent;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.setting.BoolSetting;
-import me.xoq.cortex.setting.IntSetting;
 import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.InventoryUtils;
@@ -21,14 +20,6 @@ public class AutoTool extends Module {
     public AutoTool() {
         super("auto-tool", "Automatically switches to the most effective tool when performing a task");
     }
-
-    private final Setting<Boolean> debug = registerSetting(
-            new BoolSetting.Builder()
-                    .name("debug")
-                    .description("Whether or not to log debug information to chat")
-                    .defaultValue(false)
-                    .build()
-    );
 
     private int lastSelectedSlot;
     private int candidateSlot;
@@ -63,7 +54,6 @@ public class AutoTool extends Module {
         float bestScore = currentScore;
         for (int slot = 0; slot < hotbar.size(); slot++) {
             float score = getScore(blockState, hotbar.get(slot));
-            if (debug.get()) ChatUtils.info("Slot §9" + (slot + 1) + "§r §6" + score + "§r.");
             if (score > bestScore) {
                 bestScore = score;
                 bestSlot = slot;
@@ -73,7 +63,6 @@ public class AutoTool extends Module {
         candidateSlot  = bestSlot;
         candidateScore = bestScore;
 
-        if (debug.get()) ChatUtils.info("Slot §6" + (bestSlot + 1) + "§r");
         if (bestSlot != mc.player.getInventory().getSelectedSlot()) {
             InventoryUtils.setSelectedHotbarSlot(bestSlot);
         }
