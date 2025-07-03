@@ -23,12 +23,14 @@ public final class Modules {
     private static Module pendingBind = null;
 
     public static void init() {
+        register(new AntiBreak());
         register(new AutoSneak());
         register(new AutoTool());
         register(new BetterTooltips());
         register(new BreakDelay());
         register(new Collisions());
         register(new MLGAssist());
+        register(new DebugHUD());
 
         EventBus.register(KeyEvent.Press.class, Modules::onKeyPress);
         EventBus.register(KeyEvent.Release.class, Modules::onKeyRelease);
