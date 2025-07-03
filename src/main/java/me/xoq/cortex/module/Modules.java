@@ -102,7 +102,7 @@ public final class Modules {
         JsonObject root = new JsonObject();
         JsonObject mods = new JsonObject();
 
-        MODULES.values().forEach(m -> mods.add(m.getName(), m.toJson()));
+        MODULES.values().forEach(m -> mods.add("module." + m.getName(), m.toJson()));
         root.add("modules", mods);
 
         return root;
@@ -113,7 +113,7 @@ public final class Modules {
 
         JsonObject mods = obj.getAsJsonObject("modules");
         for (Module module : MODULES.values()) {
-            if (mods.has(module.getName())) module.fromJson(mods.getAsJsonObject(module.getName()));
+            if (mods.has("module." + module.getName())) module.fromJson(mods.getAsJsonObject(module.getName()));
         }
     }
 }

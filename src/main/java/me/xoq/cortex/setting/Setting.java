@@ -37,12 +37,13 @@ public abstract class Setting<T> implements ISetting<T> {
 
     @Override
     public void toJson(JsonObject root) {
-        root.add(name, serializeValue());
+        root.add("setting." + name, serializeValue());
     }
+
     @Override
     public void fromJson(JsonObject root) {
-        if (root.has(name)) {
-            deserializeValue(root.get(name));
+        if (root.has("setting." + name)) {
+            deserializeValue(root.get("setting." + name));
         }
     }
 
