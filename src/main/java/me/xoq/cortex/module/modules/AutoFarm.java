@@ -6,17 +6,14 @@ import me.xoq.cortex.event.misc.TickEvent;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.setting.IntSetting;
 import me.xoq.cortex.setting.Setting;
-import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.InventoryUtils;
+import me.xoq.cortex.util.Utils;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -26,8 +23,6 @@ import static me.xoq.cortex.CortexClient.mc;
 public class AutoFarm extends Module {
     public AutoFarm() {
         super("auto-farm", "Automatically replant seeds when you harvest grown crops");
-
-
     }
 
     private final Setting<Integer> delay = registerSetting(
@@ -38,8 +33,37 @@ public class AutoFarm extends Module {
                     .build()
     );
 
-    private static class Task { BlockPos pos; int ticks; int oldSlot; }
+    private static class Task { BlockPos pos; int ticks; CropType type; int oldSlot; }
     private final Queue<Task> queue = new ArrayDeque<>();
+
+    public enum CropType {
+        ALL("All", null, null),
+        WHEAT("Wheat", Items.WHEAT_SEEDS, (CropBlock) Blocks.WHEAT),
+        CARROT("Carrot", Items.CARROT, (CropBlock) Blocks.CARROTS),
+        POTATO("Potato", Items.POTATO, (CropBlock) Blocks.POTATOES);
+
+        public final String title;
+        public final Item seedItem;
+        public final CropBlock cropBlock;
+
+        CropType(String title, Item seedItem, CropBlock cropBlock) {
+            this.title = title;
+            this.seedItem = seedItem;
+            this.cropBlock = cropBlock;
+        }
+
+        public boolean matches(CropBlock crop) {
+            if (this == ALL) return true;
+            return crop == this.cropBlock;
+        }
+
+        public static CropType fromBlock(CropBlock crop) {
+            for (CropType type : values()) {
+                if (type != ALL && type.matches(crop)) return type;
+            }
+            return ALL;
+        }
+    }
 
     @Override
     protected void onEnable() {
@@ -55,8 +79,11 @@ public class AutoFarm extends Module {
 
         if (!(state.getBlock() instanceof CropBlock crop)) return;
 
+        CropType typePicked = CropType.fromBlock(crop);
+
         Task task = new Task();
         task.pos = pos;
+        task.type = typePicked;
         task.ticks = delay.get();
         task.oldSlot = InventoryUtils.getSelectedHotbarSlot();
         queue.add(task);
@@ -72,44 +99,19 @@ public class AutoFarm extends Module {
 
         queue.remove();
 
+        Item toPlant = currentTask.type.seedItem;
+
+        if (toPlant == null) return;
+
         int seedSlot = InventoryUtils.getHotbarStacks().stream()
                 .map(ItemStack::getItem)
                 .toList()
-                .indexOf(Items.WHEAT_SEEDS);
+                .indexOf(toPlant);
 
-        if (seedSlot < 0) return;  // no seeds?
+        if (seedSlot < 0) return;  // no seed item?
 
         InventoryUtils.setSelectedHotbarSlot(seedSlot);
-
-        BlockPos farmlandPos = currentTask.pos;
-        ChatUtils.info(String.format(
-                "AutoFarm: t=%d, planting at %s",
-                currentTask.ticks, farmlandPos
-        ));
-        
-        place(farmlandPos, seedSlot);
-
+        Utils.place(currentTask.pos, seedSlot);
         InventoryUtils.setSelectedHotbarSlot(currentTask.oldSlot);
-    }
-
-    public static void place(BlockPos blockPos, int slot) {
-        if (mc.player == null) return;
-
-        Vec3d hitPos = Vec3d.ofCenter(blockPos);
-        Direction side = Direction.UP;
-
-        BlockHitResult hitResult = new BlockHitResult(hitPos, side, blockPos, false);
-
-        InventoryUtils.setSelectedHotbarSlot(slot);
-        interact(hitResult);
-    }
-
-    public static void interact(BlockHitResult blockHitResult) {
-        if (mc.player == null || mc.interactionManager == null) return;
-
-        ActionResult result = mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, blockHitResult);
-
-        if (result.isAccepted())
-            mc.player.swingHand(Hand.MAIN_HAND);
     }
 }

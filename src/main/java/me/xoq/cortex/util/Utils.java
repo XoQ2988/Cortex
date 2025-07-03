@@ -1,10 +1,18 @@
 package me.xoq.cortex.util;
 
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
+import static me.xoq.cortex.CortexClient.mc;
 
 public class Utils {
     public static String nameToTitle(String name) {
@@ -51,5 +59,29 @@ public class Utils {
                     return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
                 })
                 .collect(Collectors.joining(" "));
+    }
+
+    public static void place(BlockPos blockPos, int slot) {
+        place(blockPos, Direction.UP, slot);
+    }
+
+    public static void place(BlockPos blockPos, Direction side, int slot) {
+        if (mc.player == null) return;
+
+        Vec3d hitPos = Vec3d.ofCenter(blockPos);
+
+        BlockHitResult hitResult = new BlockHitResult(hitPos, side, blockPos, false);
+
+        InventoryUtils.setSelectedHotbarSlot(slot);
+        interact(hitResult);
+    }
+
+    public static void interact(BlockHitResult blockHitResult) {
+        if (mc.player == null || mc.interactionManager == null) return;
+
+        ActionResult result = mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, blockHitResult);
+
+        if (result.isAccepted())
+            mc.player.swingHand(Hand.MAIN_HAND);
     }
 }
