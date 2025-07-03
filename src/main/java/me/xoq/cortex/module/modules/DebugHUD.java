@@ -43,7 +43,9 @@ public class DebugHUD extends Module {
 
         for (Map.Entry<String, Supplier<String>> entry : lines.entrySet()) {
             String name = entry.getKey();
-            String val  = entry.getValue().get();
+            String val = entry.getValue().get();
+
+            if (val == null) continue;
 
             MutableText text = Text.literal(name + ": ").formatted(PRIMARY)
                     .append(Text.literal(val).formatted(SECONDARY));
