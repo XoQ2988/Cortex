@@ -39,7 +39,7 @@ public abstract class Module {
         if (enabled) return;
         onEnable();
         EventBus.register(this);
-        DebugHUD.registerLine("module."  + name + ".status", this::getStatus);
+        DebugHUD.registerLine( title, this::getStatus);
         enabled = true;
     }
 
@@ -47,7 +47,7 @@ public abstract class Module {
         if (!enabled) return;
         onDisable();
         EventBus.unregister(this);
-        DebugHUD.unregisterLine("module."  + name + ".status");
+        DebugHUD.unregisterLine(title);
         enabled = false;
     }
 
