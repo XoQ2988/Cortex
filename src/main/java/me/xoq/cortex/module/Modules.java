@@ -17,8 +17,6 @@ import java.util.Map;
 import static me.xoq.cortex.CortexClient.mc;
 
 public final class Modules {
-    private Modules() { }
-
     private static final Map<String, Module> MODULES = new LinkedHashMap<>();
     private static Module pendingBind = null;
 
@@ -37,52 +35,57 @@ public final class Modules {
         EventBus.register(KeyEvent.Release.class, Modules::onKeyRelease);
     }
 
+    // Key event handlers
     private static void onKeyPress(KeyEvent.Press event) {
-        // don't toggle modules while any GUI is open
-        if (mc.currentScreen != null) return;
+        if (mc.currentScreen != null) return;  // don't toggle modules while any GUI is open
 
-        // capture logic
-        if (pendingBind != null) {
-            int key = event.getKey();
-
-            if (key == GLFW.GLFW_KEY_ESCAPE) ChatUtils.info("§cBinding cancelled for " + pendingBind.getTitle());
-            else {
-                pendingBind.setKeybind(key);
-                ChatUtils.info("§aBound §6" + pendingBind.getTitle() + " §ato §6" + Utils.keyToString(key) + "§r.");
-            }
-            pendingBind = null;
+        if (captureBind(event.getKey())) {
             event.cancel();
             Config.save();
             return;
         }
 
-        // toggle logic
-        for (Module module : getModules()) {
-            int bind = module.getKeybind();
-            if (bind < 0) continue;  // skip unbound
-            if (event.getKey() == bind) {
-                module.toggle();
-                break;  // only toggle one module per key
-            }
-        }
+        MODULES.values().stream()
+                .filter(mod -> mod.getKeybind() >= 0 && mod.getKeybind() == event.getKey())
+                .findFirst()
+                .ifPresent(Module::toggle);
     }
 
     private static void onKeyRelease(KeyEvent.Release event) {
         if (mc.currentScreen != null) return;
 
-        for (Module module : getModules()) {
-            int bind = module.getKeybind();
-            // only momentary modules, and only if currently enabled
-            if (module.isMomentary() && bind >= 0 && event.getKey() == bind && module.isEnabled()) {
-                module.toggle();
-                event.cancel();  // consume the release
-                break;           // only one module per key
-            }
-        }
+        MODULES.values().stream()
+                .filter(Module::isMomentary)
+                .filter(mod -> mod.getKeybind() >= 0 && mod.getKeybind() == event.getKey() && mod.isEnabled())
+                .findFirst()
+                .ifPresent(mod -> {
+                    mod.toggle();
+                    event.cancel();
+                });
     }
 
+    private static boolean captureBind(int key) {
+        if (pendingBind == null) return false;
+
+        if (key == GLFW.GLFW_KEY_ESCAPE) {
+            ChatUtils.info("§cBinding cancelled for " + pendingBind.getTitle());
+        } else {
+            pendingBind.setKeybind(key);
+            ChatUtils.info("§aBound §6" + pendingBind.getTitle()
+                    + " §ato §6" + Utils.keyToString(key) + "§r.");
+        }
+        pendingBind = null;
+        return true;
+    }
+
+    // Public API
     public static void register(Module module) {
         MODULES.put(module.getName(), module);
+    }
+
+    public static void startBinding(Module module) {
+        pendingBind = module;
+        ChatUtils.info("§ePress a key to bind " + module.getTitle() + "§r, or §cESC §rto cancel.");
     }
 
     public static Collection<Module> getModules() {
@@ -93,21 +96,21 @@ public final class Modules {
         return MODULES.get(name);
     }
 
-    public static void startBinding(Module module) {
-        pendingBind = module;
-        ChatUtils.info("§ePress a key to bind " + module.getTitle() + "§r, or §cESC §rto cancel.");
-    }
-
+    // Serialization
     public static JsonObject toJson() {
         JsonObject root = new JsonObject();
         JsonObject mods = new JsonObject();
 
-        for (Module m : MODULES.values()) {
-            JsonObject mCfg = m.toJson();
-            if (!mCfg.isEmpty()) mods.add("module." + m.getName(), mCfg);
-        }
-        if (!mods.isEmpty()) root.add("modules", mods);
+        MODULES.values().forEach(mod -> {
+            JsonObject mCfg = mod.toJson();
+            if (!mCfg.isEmpty()) {
+                mods.add("module." + mod.getName(), mCfg);
+            }
+        });
 
+        if (!mods.isEmpty()) {
+            root.add("modules", mods);
+        }
         return root;
     }
 
@@ -115,9 +118,9 @@ public final class Modules {
         if (!obj.has("modules")) return;
 
         JsonObject mods = obj.getAsJsonObject("modules");
-        for (Module module : MODULES.values()) {
-            if (mods.has("module." + module.getName()))
-                module.fromJson(mods.getAsJsonObject("module." + module.getName()));
+        for (Module mod : MODULES.values()) {
+            if (mods.has("module." + mod.getName()))
+                mod.fromJson(mods.getAsJsonObject("module." + mod.getName()));
         }
     }
 }

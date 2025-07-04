@@ -13,44 +13,27 @@ public abstract class Module {
     private final String name;
     private final String title;
     private final String description;
+
     private boolean enabled = false;
     private boolean momentary = false;
     private int keybind = -1;
+
     private final List<Setting<?>> settings = new ArrayList<>();
 
+    // Constructor
     protected Module(String name, String description) {
         this.name = name;
         this.title = Utils.nameToTitle(name);
         this.description = description;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public int getKeybind() {
-        return keybind;
-    }
-
-    public final boolean isMomentary() {
-        return momentary;
-    }
-
-    protected String getStatus() {
-        return null;
-    }
+    // Public API
+    public String getName() { return name; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public boolean isEnabled() { return enabled; }
+    public final boolean isMomentary() { return momentary; }
+    public int getKeybind() { return keybind; }
 
     public final void enable() {
         if (enabled) return;
@@ -82,9 +65,12 @@ public abstract class Module {
         this.momentary = momentary;
     }
 
+    // Hooks
     protected void onEnable() { }
     protected void onDisable() { }
+    protected String getStatus() { return null; }
 
+    // Settings management
     public Collection<Setting<?>> getSettings() {
         return Collections.unmodifiableCollection(settings);
     }
@@ -94,6 +80,7 @@ public abstract class Module {
         return setting;
     }
 
+    // Serialization
     public JsonObject toJson() {
         JsonObject configJson = new JsonObject();
 
