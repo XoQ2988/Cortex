@@ -4,7 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.xoq.cortex.util.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class Setting<T> {
     protected final String name;
@@ -13,6 +15,7 @@ public abstract class Setting<T> {
 
     protected T value;
     protected final T defaultValue;
+    private final List<Consumer<T>> listeners = new ArrayList<>();
 
     protected Setting(String name, String description, T defaultValue) {
         this.name = name;
@@ -28,8 +31,20 @@ public abstract class Setting<T> {
     public String getDescription() { return description; }
     public T getDefault()          { return defaultValue; }
     public T get()                 { return value; }
-    public void set(T value)       { this.value = value; }
-    public void resetToDefault()   { this.value = defaultValue; }
+
+    public void set(T value)       {
+        this.value = value;
+        listeners.forEach(l -> l.accept(value));
+    }
+
+    public void resetToDefault()   {
+        set(defaultValue);
+    }
+
+    public Setting<T> onChanged(Consumer<T> callback) {
+        listeners.add(callback);
+        return this;
+    }
 
     public List<String> getSuggestions() {
         return List.of();
