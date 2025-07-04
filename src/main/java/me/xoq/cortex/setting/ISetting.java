@@ -8,6 +8,7 @@ public interface ISetting<T> {
     String getName();
     String getTitle();
     String getDescription();
+    T getDefault();
     T get();
     void set(T value);
     void resetToDefault();

@@ -7,10 +7,7 @@ import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.Utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public abstract class Module {
     private final String name;
@@ -100,16 +97,16 @@ public abstract class Module {
     public JsonObject toJson() {
         JsonObject configJson = new JsonObject();
 
-        configJson.addProperty("enabled", enabled);
-        configJson.addProperty("keybind", keybind);
-        configJson.addProperty("momentary", momentary);
+        if (enabled)        configJson.addProperty("enabled", true);
+        if (keybind != -1)  configJson.addProperty("keybind", keybind);
+        if (momentary)      configJson.addProperty("momentary", true);
 
         if (!settings.isEmpty()) {
             JsonObject settingsJson = new JsonObject();
             for (Setting<?> s : settings) {
-                s.toJson(settingsJson);
+                if (!Objects.equals(s.get(), s.getDefault())) s.toJson(settingsJson);
             }
-            configJson.add("settings", settingsJson);
+            if (!settingsJson.isEmpty()) configJson.add("settings", settingsJson);
         }
 
         return configJson;

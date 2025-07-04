@@ -102,8 +102,11 @@ public final class Modules {
         JsonObject root = new JsonObject();
         JsonObject mods = new JsonObject();
 
-        MODULES.values().forEach(m -> mods.add("module." + m.getName(), m.toJson()));
-        root.add("modules", mods);
+        for (Module m : MODULES.values()) {
+            JsonObject mCfg = m.toJson();
+            if (!mCfg.isEmpty()) mods.add("module." + m.getName(), mCfg);
+        }
+        if (!mods.isEmpty()) root.add("modules", mods);
 
         return root;
     }

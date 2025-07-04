@@ -9,6 +9,7 @@ import me.xoq.cortex.module.Module;
 import me.xoq.cortex.module.Modules;
 import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.ChatUtils;
+import me.xoq.cortex.util.Config;
 import net.minecraft.command.CommandSource;
 
 import java.util.Optional;
@@ -107,6 +108,7 @@ public class SettingsCommand extends Command {
         if (module == null) ChatUtils.error("Unknown module: " + name);
         else {
             module.getSettings().forEach(Setting::resetToDefault);
+            Config.save();
             ChatUtils.info("Reset all settings for " + module.getTitle());
         }
 
@@ -126,6 +128,7 @@ public class SettingsCommand extends Command {
                 ChatUtils.error("Unknown setting: " + setting);
             } else {
                 Setting<?> s = opt.get();
+                Config.save();
                 ChatUtils.info(String.format("%s = %s",
                         s.getName(), s.get().toString()));
             }
@@ -150,6 +153,7 @@ public class SettingsCommand extends Command {
             } else {
                 Setting<?> s = opt.get();
                 s.resetToDefault();
+                Config.save();
                 ChatUtils.info("Reset " + s.getName() + " to default: " + s.get());
             }
         }
@@ -181,6 +185,7 @@ public class SettingsCommand extends Command {
         try {
             Object parsed = setting.parseValue(rawValue);
             setting.set(parsed);
+            Config.save();
             ChatUtils.info("Set " + setting.getName() + " = " + setting.get());
         } catch (IllegalArgumentException iae) {
             ChatUtils.error(

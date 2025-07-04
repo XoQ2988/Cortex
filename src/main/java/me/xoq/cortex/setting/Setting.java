@@ -21,6 +21,7 @@ public abstract class Setting<T> implements ISetting<T> {
     @Override public String getName()        { return name; }
     @Override public String getTitle()       { return title; }
     @Override public String getDescription() { return description; }
+    @Override public T getDefault()     { return defaultValue; }
     @Override public T get()                 { return value; }
     @Override public void set(T value)       { this.value = value; }
     @Override public void resetToDefault()   { this.value = defaultValue; }
