@@ -113,7 +113,8 @@ public final class Modules {
 
         JsonObject mods = obj.getAsJsonObject("modules");
         for (Module module : MODULES.values()) {
-            if (mods.has("module." + module.getName())) module.fromJson(mods.getAsJsonObject(module.getName()));
+            if (mods.has("module." + module.getName()))
+                module.fromJson(mods.getAsJsonObject("module." + module.getName()));
         }
     }
 }

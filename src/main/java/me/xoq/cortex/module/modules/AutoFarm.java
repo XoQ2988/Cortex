@@ -4,6 +4,7 @@ import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.event.block.BlockBreakEvent;
 import me.xoq.cortex.event.misc.TickEvent;
 import me.xoq.cortex.module.Module;
+import me.xoq.cortex.setting.EnumSetting;
 import me.xoq.cortex.setting.IntSetting;
 import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.InventoryUtils;
@@ -16,7 +17,10 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 import static me.xoq.cortex.CortexClient.mc;
 
@@ -33,6 +37,15 @@ public class AutoFarm extends Module {
                     .build()
     );
 
+    private final Setting<CropType> cropType = registerSetting(
+            new EnumSetting.Builder<CropType>()
+                    .name("crop")
+                    .description("Which crop to auto-replant")
+                    .enumClass(CropType.class)
+                    .defaultValue(CropType.ALL)
+                    .build()
+    );
+
     private static class Task { BlockPos pos; int ticks; CropType type; int oldSlot; }
     private final Queue<Task> queue = new ArrayDeque<>();
 
@@ -40,11 +53,19 @@ public class AutoFarm extends Module {
         ALL("All", null, null),
         WHEAT("Wheat", Items.WHEAT_SEEDS, (CropBlock) Blocks.WHEAT),
         CARROT("Carrot", Items.CARROT, (CropBlock) Blocks.CARROTS),
-        POTATO("Potato", Items.POTATO, (CropBlock) Blocks.POTATOES);
+        POTATO("Potato", Items.POTATO, (CropBlock) Blocks.POTATOES),
+        BEETROOT("Beetroot", Items.BEETROOT_SEEDS, (CropBlock) Blocks.BEETROOTS);
 
         public final String title;
         public final Item seedItem;
         public final CropBlock cropBlock;
+
+        private static final Map<CropBlock, CropType> BY_BLOCK;
+        static {
+            BY_BLOCK = Arrays.stream(values())
+                    .filter(t -> t.cropBlock != null)
+                    .collect(Collectors.toMap(t -> t.cropBlock, t -> t));
+        }
 
         CropType(String title, Item seedItem, CropBlock cropBlock) {
             this.title = title;
@@ -52,16 +73,8 @@ public class AutoFarm extends Module {
             this.cropBlock = cropBlock;
         }
 
-        public boolean matches(CropBlock crop) {
-            if (this == ALL) return true;
-            return crop == this.cropBlock;
-        }
-
         public static CropType fromBlock(CropBlock crop) {
-            for (CropType type : values()) {
-                if (type != ALL && type.matches(crop)) return type;
-            }
-            return ALL;
+            return BY_BLOCK.getOrDefault(crop, ALL);
         }
     }
 
@@ -80,6 +93,7 @@ public class AutoFarm extends Module {
         if (!(state.getBlock() instanceof CropBlock crop)) return;
 
         CropType typePicked = CropType.fromBlock(crop);
+        if (cropType.get() != CropType.ALL && cropType.get() != typePicked) return;
 
         Task task = new Task();
         task.pos = pos;
@@ -91,7 +105,7 @@ public class AutoFarm extends Module {
 
     @EventListener
     private void onTick(TickEvent.Post event) {
-        if (mc.player == null || mc.interactionManager == null) return;
+        if (mc.player == null ||mc.world == null || mc.interactionManager == null) return;
         if (queue.isEmpty()) return;
 
         Task currentTask = queue.peek();
@@ -99,7 +113,9 @@ public class AutoFarm extends Module {
 
         queue.remove();
 
-        Item toPlant = currentTask.type.seedItem;
+        Item toPlant = currentTask.type.seedItem != null
+                ? currentTask.type.seedItem
+                : CropType.fromBlock((CropBlock) mc.world.getBlockState(currentTask.pos).getBlock()).seedItem;
 
         if (toPlant == null) return;
 
