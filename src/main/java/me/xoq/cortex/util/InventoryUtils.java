@@ -2,14 +2,18 @@ package me.xoq.cortex.util;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static me.xoq.cortex.CortexClient.mc;
 
@@ -38,7 +42,13 @@ public class InventoryUtils {
     public static Object2IntMap<RegistryEntry<Enchantment>> getEnchantments(ItemStack stack) {
         Object2IntMap<RegistryEntry<Enchantment>> enchantments = new Object2IntOpenHashMap<>();
 
-        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : stack.getEnchantments().getEnchantmentEntries()) {
+        Set<Object2IntMap.Entry<RegistryEntry<Enchantment>>> entries =
+                stack.getItem() == Items.ENCHANTED_BOOK
+                        ? stack.getOrDefault(DataComponentTypes.STORED_ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT)
+                            .getEnchantmentEntries()
+                        : stack.getEnchantments().getEnchantmentEntries();
+
+        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : entries) {
             enchantments.put(entry.getKey(), entry.getIntValue());
         }
 

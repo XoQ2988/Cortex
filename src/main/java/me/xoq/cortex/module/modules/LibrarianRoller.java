@@ -1,5 +1,7 @@
 package me.xoq.cortex.module.modules;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import me.xoq.cortex.event.EventListener;
 import me.xoq.cortex.event.block.BlockInteractEvent;
 import me.xoq.cortex.event.entity.EntityInteractEvent;
@@ -8,6 +10,7 @@ import me.xoq.cortex.event.misc.TickEvent;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.setting.BoolSetting;
 import me.xoq.cortex.setting.EnumSetting;
+import me.xoq.cortex.setting.IntSetting;
 import me.xoq.cortex.setting.Setting;
 import me.xoq.cortex.util.ChatUtils;
 import me.xoq.cortex.util.InventoryUtils;
@@ -20,11 +23,9 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.screen.MerchantScreenHandler;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -58,6 +59,15 @@ public class LibrarianRoller extends Module {
                     .build()
     );
 
+    private final Setting<Integer> priceThreshold = registerSetting(
+            new IntSetting.Builder()
+                    .name("price-threshold")
+                    .description("Maximum allowed cost as a percentage of the optimal price (100 = optimal)")
+                    .defaultValue(150)
+                    .min(100).max(500)
+                    .build()
+    );
+
     public enum EnchantmentType {
         ANY("Any", null),
         EFFICIENCY("Efficiency", Enchantments.EFFICIENCY),
@@ -76,28 +86,30 @@ public class LibrarianRoller extends Module {
     private VillagerEntity villager;
     private BlockPos lecternPos;
     private int stage;
+    private String status;
 
     @Override
     protected void onEnable() {
         villager = null;
         lecternPos = null;
-        stage = 0;
+        stage = -1;
+        status = null;
     }
 
     @EventListener
     private void onInteractEntity(EntityInteractEvent event) {
-        if (villager != null) return;
+        if (!isEnabled() || villager != null) return;
         if (!(event.getTarget() instanceof VillagerEntity v)) return;
 
         villager = v;
         event.cancel();
 
-        ChatUtils.info("Targeting " + villager.getName().getString());
+        status = "Villager at " + villager.getBlockPos().toShortString();
     }
 
     @EventListener
     private void onInteractBlock(BlockInteractEvent event) {
-        if (mc.world == null || villager == null) return;
+        if (mc.world == null || !isEnabled() || villager == null) return;
 
         BlockPos pos = event.getHitResult().getBlockPos();
         if (lecternPos != null) return;
@@ -105,33 +117,31 @@ public class LibrarianRoller extends Module {
         if (!(mc.world.getBlockState(pos).getBlock() == Blocks.LECTERN)) return;
 
         lecternPos = pos;
+        stage = 0;
         event.cancel();
 
-        ChatUtils.info("Targeting Lectern at " + pos.toShortString());
+        status  = "Lectern at " + pos.toShortString();
     }
 
     @EventListener
     private void onOpenScreen(OpenScreenEvent event) {
-        if (!(event.getScreen() instanceof MerchantScreen merchantScreen)) return;
+        if (!(event.getScreen() instanceof MerchantScreen)) return;
 
         if (lecternPos == null && villager != null) {
             event.cancel();
-            return;
         }
-
-        if (stage < 5) event.cancel();
     }
 
     @EventListener
     private void onTick(TickEvent.Post event) {
         if (mc.world == null || mc.player == null || mc.interactionManager == null || villager == null || lecternPos == null) return;
+        if (mc.currentScreen != null && !(mc.currentScreen instanceof MerchantScreen)) return;
 
         switch (stage) {
             // Break block
             case 0 -> {
                 if (mc.world.getBlockState(lecternPos).getBlock() != Blocks.AIR) {
                     mc.interactionManager.attackBlock(lecternPos, Direction.UP);
-                    ChatUtils.info("Breaking lectern...");
                     stage = 1;
                 }
             }
@@ -139,7 +149,6 @@ public class LibrarianRoller extends Module {
             // Check if block is broken
             case 1 -> {
                 if (mc.world.getBlockState(lecternPos).isAir()) {
-                    ChatUtils.info("Lectern broken");
                     stage = 2;
                 }
             }
@@ -148,7 +157,6 @@ public class LibrarianRoller extends Module {
             case 2 -> {
                 Optional<RegistryKey<VillagerProfession>> prof = villager.getVillagerData().profession().getKey();
                 if (prof.isPresent() && prof.get() == VillagerProfession.NONE) {
-                    ChatUtils.info("Profession cleared");
                     stage = 3;
                 }
             }
@@ -161,7 +169,6 @@ public class LibrarianRoller extends Module {
                         .indexOf(Blocks.LECTERN.asItem());
 
                 if (slot < 0) {
-                    ChatUtils.warn("No lectern in hotbar! Disabling.");
                     disable();
                     return;
                 }
@@ -171,14 +178,12 @@ public class LibrarianRoller extends Module {
                 InventoryUtils.setSelectedHotbarSlot(previous);
 
                 stage = 4;
-                ChatUtils.info("Placed lectern");
             }
 
             // Wait for villager to become librarian
             case 4 -> {
                 Optional<RegistryKey<VillagerProfession>> prof = villager.getVillagerData().profession().getKey();
                 if (prof.isPresent() && prof.get() == VillagerProfession.LIBRARIAN) {
-                    ChatUtils.info("Became librarian");
                     stage = 5;
                 }
             }
@@ -193,58 +198,79 @@ public class LibrarianRoller extends Module {
             // Scan offers
             case 6 -> {
                 if (!(mc.currentScreen instanceof MerchantScreen screen)) return;
+
                 MerchantScreenHandler handler = screen.getScreenHandler();
                 TradeOfferList offers = handler.getRecipes();
 
-                for (int i = 0; i < offers.size(); i++) {
-                    TradeOffer offer = offers.get(i);
-                    ItemStack result = offer.getSellItem();
+                boolean found = false;
 
-                    // only enchanted books
-                    if (result.getItem() != Items.ENCHANTED_BOOK) continue;
+                for (TradeOffer offer : offers) {
+                    ItemStack book = offer.getSellItem();
+                    if (!book.isOf(Items.ENCHANTED_BOOK)) continue;
 
-                    // pull out all enchantments on this book
-                    var enchantmentEntries = result.getEnchantments().getEnchantmentEntries();
+                    int cost = offer.getOriginalFirstBuyItem().getCount();
+                    int pct = priceThreshold.get();
 
-                    // find the level for our desired enchantment type
-                    int level = 0;
-                    for (var entry : enchantmentEntries) {
-                        RegistryEntry<Enchantment> e = entry.getKey();
-                        int lvl = entry.getIntValue();
-                        if (e.matchesKey(enchantment.get().enchantment)) {
-                            level = lvl;
-                            break;
+                    Object2IntMap<RegistryEntry<Enchantment>> enchants = InventoryUtils.getEnchantments(book);
+                    for (var entry : Object2IntMaps.fastIterable(enchants)) {
+                        RegistryEntry<Enchantment> registryEntry = entry.getKey();
+
+                        EnchantmentType target = enchantment.get();
+                        if (target != EnchantmentType.ANY && !registryEntry.matchesKey(target.enchantment)) {
+                            status = "Skip: " + registryEntry.getIdAsString() + " not target";
+                            continue;
                         }
+
+                        int allowed = getPrice(registryEntry, pct);
+                        if (cost > allowed) {
+                            status = "Skip: cost " + cost + " > " + allowed;
+                            continue;
+                        }
+
+                        int level = entry.getIntValue();
+                        int max = registryEntry.value().getMaxLevel();
+                        if (onlyMax.get() && level != max) {
+                            status = "Skip: level " + level + " > " + max + " for " + registryEntry.getIdAsString();
+                            continue;
+                        }
+
+                        ChatUtils.info("Got " + registryEntry.getIdAsString() + " " + level + " for " + cost);
+                        found = true;
+                        break;
                     }
-
-                    boolean matchesType = enchantment.get() == EnchantmentType.ANY
-                            || level > 0;
-                    boolean matchesMax  = !onlyMax.get()
-                            || level == offer.getFirstBuyItem().
-
-                    if (matchesType && matchesMax) {
-                        // select this offer
-                        int recipeSlot = i + handler.getRecipeSlotStartIndex();
-                        handler.onSlotClick(handler.syncId, recipeSlot, 0, SlotActionType.PICKUP, mc.player);
-
-                        // take the result
-                        int outputSlot = handler.getOutputSlot(); // e.g. 2, or use handler.getTradeResultSlotIndex()
-                        handler.onSlotClick(handler.syncId, outputSlot, 0, SlotActionType.QUICK_MOVE, mc.player);
-
-                        ChatUtils.info("✅ Rolled " +
-                                enchantment.get().title +
-                                " lvl " + level);
-                        stage = 7;
-                        return;
-                    }
+                    if (found) break;
                 }
 
-                // no match → refresh
-                int refreshSlot = handler.getRefreshSlot(); // usually 0
-                handler.onSlotClick(handler.syncId, refreshSlot, 0, SlotActionType.PICKUP, mc.player);
-                ChatUtils.info("🔄 No match—refreshing trades");
-                stage = 5;
+                if (found) {
+                    disable();
+                    stage = -1;
+                    status = null;
+                } else {
+                    screen.close();
+                    stage = 0;
+                }
             }
+
+            default -> { }
         }
+    }
+
+    @Override
+    protected String getStatus() {
+        return !isEnabled() ? null : status;
+    }
+
+    private static int getOptimalPrice(RegistryEntry<Enchantment> entry) {
+        int max = entry.value().getMaxLevel();
+        int price = 2 + 3 * max;
+
+        if (entry.isIn(EnchantmentTags.DOUBLE_TRADE_PRICE)) return price * 2;
+        return price;
+    }
+
+    public static int getPrice(RegistryEntry<Enchantment> entry, int percent) {
+        int basePrice = getOptimalPrice(entry);
+        int allowed = (int) Math.ceil(basePrice * percent / 100.0);
+        return Math.min(allowed, 64);
     }
 }
