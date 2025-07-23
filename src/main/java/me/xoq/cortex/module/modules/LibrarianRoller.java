@@ -126,7 +126,7 @@ public class LibrarianRoller extends Module {
     private void onOpenScreen(OpenScreenEvent.Pre event) {
         if (!(event.getScreen() instanceof MerchantScreen)) return;
 
-        if (villager != null) {event.cancel();}
+        if (villager != null && lecternPos == null) {event.cancel();}
     }
 
     @EventListener
