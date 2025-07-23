@@ -6,7 +6,7 @@ Cortex is a small client-side Fabric mod for Minecraft 1.21.7. It exposes a ligh
 
 ## Requirements
 
-- Minecraft **1.21.7**  
+- Minecraft **1.21.8**  
 - Fabric Loader **0.16.14**  
 - Fabric Loom **1.10-SNAPSHOT**  
 - Java 21  
