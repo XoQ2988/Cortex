@@ -1,5 +1,7 @@
 package me.xoq.cortex.event;
 
+import org.apache.http.concurrent.Cancellable;
+
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
@@ -15,13 +17,17 @@ public class EventBus {
     private EventBus() { }
 
     // Map from event type -> list of listeners for exactly that type
-    private static final Map<Class<?>, CopyOnWriteArrayList<Consumer<? super Object>>> LISTENERS =
+    private static final Map<Class<?>, CopyOnWriteArrayList<Subscription>> LISTENERS =
             new ConcurrentHashMap<>();
 
     //T rack object-based subscriptions so we can unregister later
     private static final Map<Object, List<Subscription>> SUBSCRIPTIONS = new ConcurrentHashMap<>();
 
-    private record Subscription(Class<?> eventClass, Consumer<?> consumer) {}
+    private record Subscription(
+            Class<?> eventClass,
+            Consumer<?> consumer,
+            EventListener.Priority priority
+    ) {}
 
     // Functional registration
 
@@ -29,22 +35,30 @@ public class EventBus {
      * Register a functional listener for exactly {@code eventType}
      */
     public static <E> void register(Class<E> eventType, Consumer<? super E> listener) {
-        // Store as Consumer<? super Object> to sidestep generic array issues
         @SuppressWarnings("unchecked")
         Consumer<? super Object> raw = (Consumer<? super Object>) listener;
-        LISTENERS
-            .computeIfAbsent(eventType, cls -> new CopyOnWriteArrayList<>())
-            .add(raw);
+        Subscription sub = new Subscription(
+                eventType,
+                raw,
+                EventListener.Priority.NORMAL  // default
+        );
+
+        var list = LISTENERS
+                .computeIfAbsent(eventType, cls -> new CopyOnWriteArrayList<>());
+        list.add(sub);
+        // sort by priority order (LOWEST first, HIGHEST last)
+        list.sort(Comparator.comparing(Subscription::priority));
     }
 
 
     /** Unregister a previously registered functional listener. */
-    public static <E> void unregister(Class<E> eventClass, Consumer<? super E> listener) {
+    public static <E> void unregister(Class<E> eventType, Consumer<? super E> listener) {
         @SuppressWarnings("unchecked")
         Consumer<? super Object> raw = (Consumer<? super Object>) listener;
-        var list = LISTENERS.get(eventClass);
-        if (list != null && list.remove(raw) && list.isEmpty()) {
-            LISTENERS.remove(eventClass);
+        var list = LISTENERS.get(eventType);
+        if (list != null) {
+            list.removeIf(sub -> sub.consumer() == raw);
+            if (list.isEmpty()) LISTENERS.remove(eventType);
         }
     }
 
@@ -59,7 +73,9 @@ public class EventBus {
     public static void register(Object listenerObj) {
         List<Subscription> subs = new ArrayList<>();
         for (Method method : listenerObj.getClass().getDeclaredMethods()) {
-            if (!method.isAnnotationPresent(EventListener.class)) continue;
+            EventListener anno = method.getAnnotation(EventListener.class);
+            if (anno == null) continue;
+
             if (method.getReturnType() != void.class || method.getParameterCount() != 1) {
                 throw new IllegalArgumentException("@" + EventListener.class.getSimpleName()
                         + " on " + method + " must be void with exactly one param");
@@ -77,9 +93,19 @@ public class EventBus {
                 }
             };
 
-            // use the functional register
-            register(eventType, consumer);
-            subs.add(new Subscription(eventType, consumer));
+            Subscription sub = new Subscription(
+                    eventType,
+                    consumer,
+                    anno.priority()
+            );
+
+            // register into the central map
+            var list = LISTENERS
+                    .computeIfAbsent(eventType, cls -> new CopyOnWriteArrayList<>());
+            list.add(sub);
+            list.sort(Comparator.comparing(Subscription::priority));
+
+            subs.add(sub);
         }
         if (!subs.isEmpty()) {
             SUBSCRIPTIONS.put(listenerObj, subs);
@@ -93,8 +119,11 @@ public class EventBus {
 
         for (Subscription sub : subs) {
             var list = LISTENERS.get(sub.eventClass());
-            if (list != null && list.remove(sub.consumer()) && list.isEmpty()) {
-                LISTENERS.remove(sub.eventClass());
+            if (list != null) {
+                list.remove(sub);
+                if (list.isEmpty()) {
+                    LISTENERS.remove(sub.eventClass());
+                }
             }
         }
     }
@@ -110,10 +139,9 @@ public class EventBus {
         var list = LISTENERS.get(event.getClass());
         if (list == null) return;
 
-        for (Consumer<?> raw : list) {
-            ((Consumer<E>) raw).accept(event);
-
-            if (event instanceof CancellableEvent cancellable && cancellable.isCancelled()) {
+        for (Subscription sub : list) {
+            ((Consumer<E>) sub.consumer()).accept(event);
+            if (event instanceof CancellableEvent ce && ce.isCancelled()) {
                 break;
             }
         }

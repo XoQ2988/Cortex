@@ -13,4 +13,11 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface EventListener { }
+public @interface EventListener {
+    /** Order in which this listener is invoked. Lower first. */
+    Priority priority() default Priority.NORMAL;
+
+    enum Priority {
+        LOWEST, LOW, NORMAL, HIGH, HIGHEST
+    }
+}

@@ -29,7 +29,6 @@ public final class Modules {
         register(new BreakDelay());
         register(new Collisions());
         register(new LibrarianRoller());
-        register(new MLGAssist());
         register(new DebugHUD());
 
         EventBus.register(KeyEvent.Press.class, Modules::onKeyPress);
