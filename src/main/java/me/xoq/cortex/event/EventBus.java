@@ -5,85 +5,106 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
+/**
+ * A simple (static) event bus supporting:
+ *  - functional listeners: EventBus.register(MyEvent.class, e -> …)
+ *  - object listeners via @EventListener methods
+ *  - cancellable events (any event that extends CancellableEvent)
+ */
 public class EventBus {
     private EventBus() { }
 
-    // underlying functional listeners
-    private static final Map<Class<?>, CopyOnWriteArrayList<Consumer>> LISTENERS = new ConcurrentHashMap<>();
+    // Map from event type -> list of listeners for exactly that type
+    private static final Map<Class<?>, CopyOnWriteArrayList<Consumer<? super Object>>> LISTENERS =
+            new ConcurrentHashMap<>();
 
-    // track object-based subscriptions so we can unregister later
+    //T rack object-based subscriptions so we can unregister later
     private static final Map<Object, List<Subscription>> SUBSCRIPTIONS = new ConcurrentHashMap<>();
 
     private record Subscription(Class<?> eventClass, Consumer<?> consumer) {}
 
+    // Functional registration
 
-    /** Functional‐style registration. */
-    public static <E> void register(Class<E> eventClass, Consumer<? super E> listener) {
+    /**
+     * Register a functional listener for exactly {@code eventType}
+     */
+    public static <E> void register(Class<E> eventType, Consumer<? super E> listener) {
+        // Store as Consumer<? super Object> to sidestep generic array issues
         @SuppressWarnings("unchecked")
         Consumer<? super Object> raw = (Consumer<? super Object>) listener;
         LISTENERS
-                .computeIfAbsent(eventClass, cls -> new CopyOnWriteArrayList<>())
-                .add(raw);
+            .computeIfAbsent(eventType, cls -> new CopyOnWriteArrayList<>())
+            .add(raw);
     }
 
 
-    /** Functional‐style unregistration. */
+    /** Unregister a previously registered functional listener. */
     public static <E> void unregister(Class<E> eventClass, Consumer<? super E> listener) {
         @SuppressWarnings("unchecked")
         Consumer<? super Object> raw = (Consumer<? super Object>) listener;
         var list = LISTENERS.get(eventClass);
-        if (list != null) {
-            list.remove(raw);
-            if (list.isEmpty()) {
-                LISTENERS.remove(eventClass);
-            }
+        if (list != null && list.remove(raw) && list.isEmpty()) {
+            LISTENERS.remove(eventClass);
         }
     }
 
+    // Object based registration via @EventListener
 
+    /**
+     * Scan all @EventListener methods on listenerObj and register them.
+     * Methods must be:
+     *  - void return
+     *  - exactly one parameter (the event type)
+     */
     public static void register(Object listenerObj) {
         List<Subscription> subs = new ArrayList<>();
-        for (Method m : listenerObj.getClass().getDeclaredMethods()) {
-            if (!m.isAnnotationPresent(EventListener.class)) continue;
-            if (m.getReturnType() != void.class || m.getParameterCount() != 1) {
+        for (Method method : listenerObj.getClass().getDeclaredMethods()) {
+            if (!method.isAnnotationPresent(EventListener.class)) continue;
+            if (method.getReturnType() != void.class || method.getParameterCount() != 1) {
                 throw new IllegalArgumentException("@" + EventListener.class.getSimpleName()
-                        + " on " + m + " must be void with exactly one param");
+                        + " on " + method + " must be void with exactly one param");
             }
-            Class<?> eventClass = m.getParameterTypes()[0];
-            m.setAccessible(true);
+
+            @SuppressWarnings("unchecked")
+            Class<Object> eventType = (Class<Object>) method.getParameterTypes()[0];
+            method.setAccessible(true);
 
             Consumer<Object> consumer = event -> {
                 try {
-                    m.invoke(listenerObj, event);
+                    method.invoke(listenerObj, event);
                 } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException("Failed to invoke event listener " + m, e);
+                    throw new RuntimeException("Failed to invoke event listener " + method, e);
                 }
             };
 
             // use the functional register
-            register(eventClass, consumer);
-            subs.add(new Subscription(eventClass, consumer));
+            register(eventType, consumer);
+            subs.add(new Subscription(eventType, consumer));
         }
         if (!subs.isEmpty()) {
             SUBSCRIPTIONS.put(listenerObj, subs);
         }
     }
 
+    //** Unregister all @EventListener methods on the given object */
     public static void unregister(Object listenerObj) {
         var subs = SUBSCRIPTIONS.remove(listenerObj);
         if (subs == null) return;
 
-        for (var sub : subs) {
+        for (Subscription sub : subs) {
             var list = LISTENERS.get(sub.eventClass());
-            if (list != null) {
-                list.remove(sub.consumer());
-                if (list.isEmpty()) {
-                    LISTENERS.remove(sub.eventClass());
-                }
+            if (list != null && list.remove(sub.consumer()) && list.isEmpty()) {
+                LISTENERS.remove(sub.eventClass());
             }
         }
     }
 
+    // Event dispatch
+
+    /**
+     * Fire an event to ALL listeners registered on the event's class, its superclass and its interfaces.
+     * If the event is a CancellableEvent and one listener calls cancel, we stop dispatching further.
+     */
     @SuppressWarnings("unchecked")
     public static <E> void fire(E event) {
         var list = LISTENERS.get(event.getClass());
@@ -92,7 +113,7 @@ public class EventBus {
         for (Consumer<?> raw : list) {
             ((Consumer<E>) raw).accept(event);
 
-            if (event instanceof ICancellable cancellable && cancellable.isCancelled()) {
+            if (event instanceof CancellableEvent cancellable && cancellable.isCancelled()) {
                 break;
             }
         }

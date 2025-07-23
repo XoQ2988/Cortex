@@ -1,12 +1,18 @@
 package me.xoq.cortex.util;
 
+import me.xoq.cortex.event.EventListener;
+import me.xoq.cortex.event.misc.TickEvent;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.shape.VoxelShapes;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -15,6 +21,9 @@ import java.util.stream.Collectors;
 import static me.xoq.cortex.CortexClient.mc;
 
 public class Utils {
+    public static boolean breaking;
+    private static boolean breakingThisTick;
+
     public static String nameToTitle(String name) {
         name = name.replace("-", " ");
 
@@ -83,5 +92,46 @@ public class Utils {
 
         if (result.isAccepted())
             mc.player.swingHand(Hand.MAIN_HAND);
+    }
+
+    public static boolean breakBlock(BlockPos blockPos) {
+        if (!canBreak(blockPos, mc.world.getBlockState(blockPos))) return false;
+
+        BlockPos pos = blockPos instanceof BlockPos.Mutable ? new BlockPos(blockPos) : blockPos;
+
+        Direction direction = getDirection(pos);
+        if (mc.interactionManager.isBreakingBlock()) {
+            mc.interactionManager.updateBlockBreakingProgress(pos, direction);
+        } else {
+            mc.getNetworkHandler().sendPacket(
+                    new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP)
+            );
+        }
+
+        mc.getNetworkHandler().sendPacket(
+                new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK,  pos, Direction.UP)
+        );
+
+        mc.player.swingHand(Hand.MAIN_HAND);
+
+        breaking = true;
+        breakingThisTick = true;
+
+        return true;
+    }
+
+    public static boolean canBreak(BlockPos blockPos, BlockState state) {
+        if (!mc.player.isCreative() && state.getHardness(mc.world, blockPos) < 0) return false;
+        return state.getOutlineShape(mc.world, blockPos) != VoxelShapes.empty();
+    }
+
+    public static Direction getDirection(BlockPos pos) {
+        Vec3d eyesPos = new Vec3d(mc.player.getX(), mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()), mc.player.getZ());
+        if ((double) pos.getY() > eyesPos.y) {
+            if (mc.world.getBlockState(pos.add(0, -1, 0)).isReplaceable()) return Direction.DOWN;
+            else return mc.player.getHorizontalFacing().getOpposite();
+        }
+        if (!mc.world.getBlockState(pos.add(0, 1, 0)).isReplaceable()) return mc.player.getHorizontalFacing().getOpposite();
+        return Direction.UP;
     }
 }

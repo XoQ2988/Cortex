@@ -28,7 +28,6 @@ import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
@@ -117,39 +116,31 @@ public class LibrarianRoller extends Module {
         if (!(mc.world.getBlockState(pos).getBlock() == Blocks.LECTERN)) return;
 
         lecternPos = pos;
-        stage = 0;
+        stage = 1;
         event.cancel();
 
         status  = "Lectern at " + pos.toShortString();
     }
 
     @EventListener
-    private void onOpenScreen(OpenScreenEvent event) {
+    private void onOpenScreen(OpenScreenEvent.Pre event) {
         if (!(event.getScreen() instanceof MerchantScreen)) return;
 
-        if (lecternPos == null && villager != null) {
-            event.cancel();
-        }
+        if (villager != null) {event.cancel();}
     }
 
     @EventListener
-    private void onTick(TickEvent.Post event) {
+    private void onTick(TickEvent.Pre event) {
         if (mc.world == null || mc.player == null || mc.interactionManager == null || villager == null || lecternPos == null) return;
         if (mc.currentScreen != null && !(mc.currentScreen instanceof MerchantScreen)) return;
 
         switch (stage) {
             // Break block
-            case 0 -> {
-                if (mc.world.getBlockState(lecternPos).getBlock() != Blocks.AIR) {
-                    mc.interactionManager.attackBlock(lecternPos, Direction.UP);
-                    stage = 1;
-                }
-            }
-
-            // Check if block is broken
             case 1 -> {
                 if (mc.world.getBlockState(lecternPos).isAir()) {
                     stage = 2;
+                } else {
+                    Utils.breakBlock(lecternPos);
                 }
             }
 
@@ -169,6 +160,7 @@ public class LibrarianRoller extends Module {
                         .indexOf(Blocks.LECTERN.asItem());
 
                 if (slot < 0) {
+                    ChatUtils.warn("No lectern in hotbar!");
                     disable();
                     return;
                 }
@@ -247,7 +239,7 @@ public class LibrarianRoller extends Module {
                     status = null;
                 } else {
                     screen.close();
-                    stage = 0;
+                    stage = 1;
                 }
             }
 
@@ -257,7 +249,7 @@ public class LibrarianRoller extends Module {
 
     @Override
     protected String getStatus() {
-        return !isEnabled() ? null : status;
+        return !isEnabled() ? null : "Stage " + stage + ": " + status;
     }
 
     private static int getOptimalPrice(RegistryEntry<Enchantment> entry) {
