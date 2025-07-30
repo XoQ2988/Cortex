@@ -1,5 +1,6 @@
 package me.xoq.cortex.event;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,40 +17,28 @@ import java.util.function.Consumer;
  *  - cancellable events (any event that extends CancellableEvent)
  */
 public class EventBus {
-    private EventBus() { }
-
-    // Map from event type -> list of listeners for exactly that type
-    private static final Map<Class<?>, CopyOnWriteArrayList<Subscription>> LISTENERS =
-            new ConcurrentHashMap<>();
-
-    //T rack object-based subscriptions so we can unregister later
+    private static final Map<Class<?>, CopyOnWriteArrayList<Subscription>> LISTENERS = new ConcurrentHashMap<>();
     private static final Map<Object, List<Subscription>> SUBSCRIPTIONS = new ConcurrentHashMap<>();
+    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+
+    private EventBus() { }
 
     private record Subscription(
             Class<?> eventClass,
-            Consumer<?> consumer,
+            Consumer<Object> consumer,
             EventListener.Priority priority
     ) {}
 
     // Functional registration
-
-    /**
-     * Register a functional listener for exactly {@code eventType}
-     */
     public static <E> void register(Class<E> eventType, Consumer<? super E> listener) {
         @SuppressWarnings("unchecked")
-        Consumer<? super Object> raw = (Consumer<? super Object>) listener;
         Subscription sub = new Subscription(
                 eventType,
-                raw,
+                (Consumer<? super Object>) listener,
                 EventListener.Priority.NORMAL  // default
         );
 
-        var list = LISTENERS
-                .computeIfAbsent(eventType, cls -> new CopyOnWriteArrayList<>());
-        list.add(sub);
-        // sort by priority order (LOWEST first, HIGHEST last)
-        list.sort(Comparator.comparing(Subscription::priority));
+        addSubscription(sub);
     }
 
 
@@ -101,12 +90,7 @@ public class EventBus {
                     anno.priority()
             );
 
-            // register into the central map
-            var list = LISTENERS
-                    .computeIfAbsent(eventType, cls -> new CopyOnWriteArrayList<>());
-            list.add(sub);
-            list.sort(Comparator.comparing(Subscription::priority));
-
+            addSubscription(sub);
             subs.add(sub);
         }
         if (!subs.isEmpty()) {
@@ -147,5 +131,12 @@ public class EventBus {
                 break;
             }
         }
+    }
+
+    // Internal helper
+    private static void addSubscription(Subscription sub) {
+        var list = LISTENERS.computeIfAbsent(sub.eventClass(), k -> new CopyOnWriteArrayList<>());
+        list.add(sub);
+        list.sort(Comparator.comparing(Subscription::priority));
     }
 }
