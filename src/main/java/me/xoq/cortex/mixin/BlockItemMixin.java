@@ -1,7 +1,7 @@
 package me.xoq.cortex.mixin;
 
-import me.xoq.cortex.event.block.BlockPlaceEvent;
 import me.xoq.cortex.event.EventBus;
+import me.xoq.cortex.event.block.BlockPlaceEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;

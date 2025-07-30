@@ -1,9 +1,6 @@
 package me.xoq.cortex.util;
 
-import me.xoq.cortex.event.EventListener;
-import me.xoq.cortex.event.misc.TickEvent;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.util.ActionResult;

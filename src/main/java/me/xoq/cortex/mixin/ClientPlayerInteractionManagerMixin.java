@@ -1,7 +1,6 @@
 package me.xoq.cortex.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import me.xoq.cortex.event.*;
+import me.xoq.cortex.event.EventBus;
 import me.xoq.cortex.event.block.BlockAttackEvent;
 import me.xoq.cortex.event.block.BlockBreakEvent;
 import me.xoq.cortex.event.block.BlockBreakingCooldownEvent;

@@ -1,12 +1,9 @@
 package me.xoq.cortex;
 
 import me.xoq.cortex.command.Commands;
-import me.xoq.cortex.event.*;
 import me.xoq.cortex.module.Modules;
 import me.xoq.cortex.util.Config;
-import me.xoq.cortex.util.Utils;
 import net.fabricmc.api.ClientModInitializer;
-
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;

@@ -1,7 +1,7 @@
 package me.xoq.cortex.module.modules;
 
-import me.xoq.cortex.event.block.BlockCollisionShapeEvent;
 import me.xoq.cortex.event.EventListener;
+import me.xoq.cortex.event.block.BlockCollisionShapeEvent;
 import me.xoq.cortex.module.Module;
 import me.xoq.cortex.setting.BoolSetting;
 import me.xoq.cortex.setting.Setting;
