@@ -30,6 +30,9 @@ public class Commands {
 
     private static void register(Command command) {
         command.registerTo(DISPATCHER);
+        for (String alias : command.getAliases()) {
+            command.register(DISPATCHER, alias);
+        }
         COMMANDS.add(command);
     }
 

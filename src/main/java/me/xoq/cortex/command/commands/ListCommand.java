@@ -12,7 +12,7 @@ import java.util.Collection;
 
 public class ListCommand extends Command {
     public ListCommand() {
-        super("list", "List all modules and their states");
+        super("list", "List all modules and their states", "modules", "mods", "ls");
     }
 
     @Override

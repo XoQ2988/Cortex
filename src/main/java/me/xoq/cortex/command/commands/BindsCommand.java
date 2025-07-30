@@ -12,7 +12,7 @@ import net.minecraft.command.CommandSource;
 
 public class BindsCommand extends Command {
     public BindsCommand() {
-        super("binds", "Show current key bindings for all modules");
+        super("binds", "Show current key bindings for all modules", "keybinds, kb");
     }
 
     @Override

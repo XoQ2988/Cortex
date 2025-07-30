@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public class SettingsCommand extends Command {
     public SettingsCommand() {
-        super("setting", "View or change a module's setting");
+        super("setting", "View or change a module's setting", "set");
     }
 
     // Suggest module names

@@ -9,7 +9,7 @@ import net.minecraft.command.CommandSource;
 
 public class HelpCommand extends Command {
     public HelpCommand() {
-        super("help", "Show available commands");
+        super("help", "Show available commands", "commands", "h");
     }
 
     @Override

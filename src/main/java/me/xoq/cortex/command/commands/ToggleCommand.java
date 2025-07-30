@@ -21,7 +21,7 @@ public class ToggleCommand extends Command {
             };
 
     public ToggleCommand() {
-        super("toggle", "Enable or disable a module");
+        super("toggle", "Enable or disable a module", "t");
     }
 
     @Override

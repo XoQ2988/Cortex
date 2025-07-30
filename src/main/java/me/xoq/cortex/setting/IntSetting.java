@@ -89,6 +89,14 @@ public class IntSetting extends Setting<Integer> {
             if (defaultValue == null) {
                 throw new IllegalStateException("IntSetting requires a defaultValue");
             }
+
+            if (min != null && defaultValue < min) {
+                throw new IllegalStateException("Default value must be ≥ min");
+            }
+            if (max != null && defaultValue > max) {
+                throw new IllegalStateException("Default value must be ≤ max");
+            }
+
             return new IntSetting(name, description, defaultValue, min, max);
         }
     }

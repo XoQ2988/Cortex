@@ -12,7 +12,7 @@ import net.minecraft.command.CommandSource;
 
 public class BindCommand extends Command {
     public BindCommand() {
-        super("bind", "Binds a module a key");
+        super("bind", "Binds a module a key", "kb", "keybind");
     }
 
     private static final SuggestionProvider<CommandSource> MODULE_SUGGESTIONS = (context, builder) -> {
